@@ -1,0 +1,724 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+<title>Funsy — your videos, your toys, perfectly in sync</title>
+<script>
+  // Pick the theme before the first paint: random from the visitor's mode, kept for the visit.
+  (() => {
+    const DARK = ["dark", "sunset", "midnight", "forest", "mono"];
+    const LIGHT = ["light", "blush", "mist", "sage", "paper"];
+    const forced = new URLSearchParams(location.search).get("theme");
+    let theme = [...DARK, ...LIGHT].includes(forced) ? forced : sessionStorage.getItem("funsy-theme");
+    if (![...DARK, ...LIGHT].includes(theme)) {
+      const set = matchMedia("(prefers-color-scheme: light)").matches ? LIGHT : DARK;
+      theme = set[Math.floor(Math.random() * set.length)];
+    }
+    sessionStorage.setItem("funsy-theme", theme);
+    document.documentElement.dataset.theme = theme;
+  })();
+</script>
+<link rel="preload" href="assets/fonts/Geist-Variable.woff2" as="font" type="font/woff2" crossorigin>
+<style>
+  @font-face { font-family: "Geist"; src: url("assets/fonts/Geist-Variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+  @font-face { font-family: "Geist Mono"; src: url("assets/fonts/GeistMono-Variable.woff2") format("woff2"); font-weight: 100 900; font-display: swap; }
+</style>
+<link rel="stylesheet" href="assets/themes.css">
+<link rel="stylesheet" href="assets/wave.css">
+<style>
+  :root { --font: "Geist", ui-sans-serif, system-ui, sans-serif; --mono: "Geist Mono", ui-monospace, monospace; }
+  * { box-sizing: border-box; }
+  .wave-rows { position: relative; z-index: 1; display: flex; flex-direction: column; gap: 6px; zoom: 1.55; }
+  html { scroll-behavior: smooth; }
+  body { margin: 0; background: var(--bg); color: var(--fg); font: 16px/1.55 "Geist", ui-sans-serif, system-ui, sans-serif; -webkit-font-smoothing: antialiased; overflow-x: hidden; }
+  html.theming, html.theming * { transition: background-color 300ms ease, color 300ms ease, border-color 300ms ease, fill 300ms ease, stroke 300ms ease, box-shadow 300ms ease !important; }
+  a { color: inherit; }
+  .mono { font-family: "Geist Mono", ui-monospace, monospace; }
+  .wrap { width: min(1200px, calc(100% - 48px)); margin: 0 auto; }
+  [hidden] { display: none !important; }
+
+  /* ---------- reveal ---------- */
+  .reveal { opacity: 0; transform: translateY(12px); transition: opacity 600ms ease, transform 600ms ease; }
+  .reveal.in { opacity: 1; transform: none; }
+
+  /* ---------- buttons ---------- */
+  .btn { height: 44px; padding: 0 18px; border-radius: 12px; border: 1px solid var(--line); background: transparent; color: var(--fg);
+    font: 600 14px "Geist", sans-serif; display: inline-flex; align-items: center; justify-content: center; gap: 8px; cursor: pointer; text-decoration: none; white-space: nowrap;
+    transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease; }
+  .btn:hover { transform: translateY(-2px); background: var(--surface); }
+  .btn.ghost { border-color: transparent; }
+  .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); box-shadow: 0 10px 30px var(--accent-soft); }
+  .btn.primary:hover { background: var(--accent-2); box-shadow: 0 16px 40px var(--accent-line); }
+  .btn.lg { height: 58px; padding: 0 28px; font-size: 16px; border-radius: 16px; }
+  .btn:focus-visible, .link:focus-visible, .dot:focus-visible, .file:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .link { font-size: 15px; color: var(--fg-2); text-decoration: underline; text-decoration-color: var(--line-2); text-underline-offset: 4px; background: none; border: 0; padding: 0; cursor: pointer; font-family: inherit; }
+  .link:hover { color: var(--fg); text-decoration-color: var(--accent); }
+
+  /* ---------- placeholders ---------- */
+  .ph { position: relative; overflow: hidden; border-radius: 16px; border: 1px solid var(--line);
+    background: repeating-linear-gradient(135deg, var(--surface) 0 16px, var(--bg-2) 16px 32px); display: grid; place-items: center; }
+  .ph > span { font: 12px "Geist Mono", monospace; color: var(--muted); background: var(--bg); border: 1px solid var(--line); padding: 6px 12px; border-radius: 8px; }
+
+  /* A piece of the app (picture taken from it, in the page's theme), floating on a soft backdrop. */
+  .pic { position: relative; overflow: hidden; display: grid; place-items: center; padding: 32px; border: 1px solid var(--line);
+    background: radial-gradient(70% 70% at 50% 40%, var(--accent-soft), transparent 75%), var(--bg-2); }
+  .pic img { display: block; width: auto; height: auto; max-width: 100%; max-height: var(--max-h, 100%); border-radius: var(--r, 12px);
+    box-shadow: 0 30px 70px -20px rgba(0,0,0,.55), 0 0 0 1px var(--line-soft); }
+
+  /* ---------- top bar ---------- */
+  .topbar { position: sticky; top: 0; z-index: 10; background: var(--bg); border-bottom: 1px solid transparent; transition: border-color 200ms ease; }
+  .topbar.scrolled { border-bottom-color: var(--line); }
+  .topbar .wrap { height: 72px; display: flex; align-items: center; gap: 40px; }
+  .wordmark { display: inline-flex; align-items: center; gap: 10px; font: 600 22px "Geist", sans-serif; letter-spacing: -0.035em; text-decoration: none; color: var(--fg); }
+  .wordmark em { font-style: normal; color: var(--accent); }
+  .wordmark svg { width: 30px; height: 30px; color: var(--accent); }
+  .nav { display: flex; gap: 28px; font-size: 14.5px; color: var(--muted); }
+  .nav a { text-decoration: none; transition: color 140ms ease; }
+  .nav a:hover { color: var(--fg); }
+  .top-right { margin-left: auto; display: flex; gap: 8px; }
+
+  /* ---------- hero ---------- */
+  .hero { position: relative; padding: 80px 0 72px; overflow: hidden; }
+  .hero::before { content: ""; position: absolute; left: 50%; top: 46%; width: 1100px; height: 640px; transform: translateX(-50%);
+    background: radial-gradient(50% 50% at 50% 50%, var(--accent-soft), transparent 72%); pointer-events: none; filter: blur(30px); }
+  .hero .wrap { position: relative; }
+  .hero-copy { display: flex; flex-direction: column; align-items: center; text-align: center; }
+  .hero h1 { margin: 0 0 22px; font-size: 76px; line-height: 1; letter-spacing: -0.05em; font-weight: 700; }
+  .hero h1 em { font-style: normal; color: var(--accent); white-space: nowrap; }
+  .hero .sub { margin: 0 0 34px; max-width: 600px; font-size: 19px; color: var(--fg-2); }
+  .hero .cta { align-items: center; }
+
+  /* The app: one picture per feature, in the page's theme. */
+  .showcase { margin: 24px 0 0; }
+  .stage { position: relative; width: min(1240px, 100vw); margin: 0 auto; }
+  .shots { position: relative; aspect-ratio: 1440 / 900;
+    border-radius: 18px; overflow: hidden; border: 1px solid var(--line-2); background: var(--bg);
+    box-shadow: 0 60px 120px -40px rgba(0,0,0,.55), 0 0 0 1px var(--line-soft); }
+  .shots img { position: absolute; inset: 0; width: 100%; height: 100%; object-fit: cover; display: block; opacity: 0;
+    transition: opacity 900ms ease; }
+  .shots img.on { opacity: 1; }
+  .shot-tabs { position: relative; display: flex; justify-content: center; flex-wrap: wrap; gap: 8px; margin-top: 28px; }
+  .shot-tab { position: relative; overflow: hidden; height: 38px; padding: 0 16px; border-radius: 999px; border: 1px solid var(--line); background: transparent;
+    color: var(--muted); font: 500 14px "Geist", sans-serif; cursor: pointer; transition: color 160ms ease, background 160ms ease, border-color 160ms ease; }
+  .shot-tab:hover { color: var(--fg); }
+  .shot-tab[aria-selected="true"] { color: var(--fg); background: var(--surface); border-color: var(--line-2); }
+  .shot-tab:focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; }
+  .shot-tab i { position: absolute; left: 0; bottom: 0; height: 2px; width: 0; background: var(--accent); }
+  .shot-tab[aria-selected="true"] i { animation: shot-progress 6s linear forwards; }
+  .showcase:hover .shot-tab i, .showcase:focus-within .shot-tab i { animation-play-state: paused; }
+  @keyframes shot-progress { to { width: 100%; } }
+  .cta { display: flex; flex-direction: column; align-items: flex-start; gap: 12px; }
+  .cta small { font: 12px "Geist Mono", monospace; color: var(--muted); }
+  .cta .link { margin-top: 4px; }
+  .cta p { margin: 0; font-size: 17px; color: var(--fg-2); }
+
+  /* ---------- players ---------- */
+  .players { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg-2); }
+  .players .wrap { padding: 40px 0 44px; }
+  .players h2 { margin: 0 0 24px; font-size: 13px; font-weight: 600; color: var(--muted); text-align: center; text-transform: uppercase; letter-spacing: .12em; font-family: "Geist Mono", monospace; }
+  .players ul { margin: 0; padding: 0; list-style: none; display: grid; grid-template-columns: repeat(11, 1fr); gap: 8px; }
+  .player { display: flex; flex-direction: column; align-items: center; gap: 10px; font-size: 12.5px; color: var(--fg-2); text-align: center; line-height: 1.3; }
+  .app-icon { width: 56px; height: 56px; border-radius: 15px; overflow: hidden; display: grid; place-items: center;
+    box-shadow: 0 1px 2px rgba(0,0,0,.25), 0 8px 20px -8px rgba(0,0,0,.4), inset 0 0 0 1px rgba(255,255,255,.08); transition: transform 180ms ease, box-shadow 180ms ease; }
+  .player:hover .app-icon { transform: translateY(-3px) scale(1.04); box-shadow: 0 2px 4px rgba(0,0,0,.25), 0 14px 28px -10px rgba(0,0,0,.5); }
+  .app-icon svg { width: 30px; height: 30px; }
+  .app-icon.pad-sm img { width: 44px; height: 44px; }
+  .app-icon.full img { width: 100%; height: 100%; object-fit: cover; }
+
+  /* ---------- sections ---------- */
+  .section { padding: 112px 0; }
+  .eyebrow { margin: 0 0 20px; display: inline-flex; align-items: center; gap: 10px; font: 500 12px "Geist Mono", monospace; text-transform: uppercase; letter-spacing: 0.12em; color: var(--accent); }
+  .eyebrow::before { content: ""; width: 18px; height: 1px; background: var(--accent); }
+  .h2 { margin: 0; font-size: 52px; line-height: 1.04; letter-spacing: -0.04em; font-weight: 700; }
+  .lead { margin: 0; font-size: 19px; color: var(--fg-2); }
+
+  /* sync */
+  .spot-head { display: grid; grid-template-columns: 1fr 1fr; gap: 64px; align-items: end; margin-bottom: 48px; }
+  .sync-panel { position: relative; border-radius: 22px; border: 1px solid var(--line); background: var(--surface); padding: 28px 28px 20px; overflow: hidden; }
+  .sync-panel::after { content: ""; position: absolute; inset: auto 20% -60% 20%; height: 80%; background: radial-gradient(50% 50% at 50% 50%, var(--accent-soft), transparent 70%); pointer-events: none; }
+  .scroll { animation: scroll 6s linear infinite; }
+  .track-line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+  .track-line.main { stroke: var(--accent); }
+  .track-line.second { stroke: var(--fg-2); opacity: .45; stroke-width: 2; }
+  .lane { stroke: var(--line); stroke-dasharray: 2 6; }
+  .frame-thumb { fill: var(--bg-2); stroke: var(--line); }
+  .playhead { stroke: var(--fg); stroke-width: 1.5; }
+  .ring { fill: none; stroke: var(--accent); stroke-width: 2; transform-box: fill-box; transform-origin: center; animation: ring 1.5s ease-out infinite; }
+  .tick { fill: var(--accent); animation: tick 1.5s ease-out infinite; }
+  @keyframes scroll { to { transform: translateX(-240px); } }
+  @keyframes ring { 0% { opacity: .9; transform: scale(.4); } 80%, 100% { opacity: 0; transform: scale(1.6); } }
+  @keyframes led { 0% { box-shadow: 0 0 0 0 var(--accent-line); } 80%, 100% { box-shadow: 0 0 0 8px transparent; } }
+  @keyframes tick { 0% { opacity: 1; } 50%, 100% { opacity: .25; } }
+
+  /* handy */
+  .handy { display: grid; grid-template-columns: 480px 1fr; gap: 72px; align-items: center; }
+  .handy > .pic { height: 600px; border-radius: 24px; --max-h: 536px; }
+  .handy .lead { margin: 18px 0 32px; }
+  .modes { display: grid; grid-template-columns: 1fr 1fr; gap: 14px; }
+  .mode { border: 1px solid var(--line); border-radius: 16px; padding: 20px 22px; background: var(--surface); transition: transform 160ms ease, border-color 160ms ease; }
+  .mode:hover { transform: translateY(-2px); border-color: var(--accent-line); }
+  .mode h3 { margin: 0 0 4px; font-size: 16px; font-weight: 600; }
+  .mode p { margin: 0; font-size: 14.5px; color: var(--muted); }
+  .modes.three { grid-template-columns: repeat(3, 1fr); }
+  .one-app .mode { padding: 24px 26px; }
+  .checks { margin: 28px 0 0; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 12px 28px; font-size: 15px; color: var(--fg-2); }
+  .checks li { display: flex; align-items: center; gap: 10px; }
+  .checks li::before { content: "✓"; display: grid; place-items: center; font-size: 11px; font-weight: 700; color: var(--accent); width: 20px; height: 20px; border-radius: 50%; background: var(--accent-soft);
+    box-shadow: inset 0 0 0 1px var(--accent-line); }
+
+  /* toys + strokers */
+  .pair { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+  .big-card { border: 1px solid var(--line); border-radius: 24px; padding: 16px 16px 32px; background: var(--surface); transition: border-color 200ms ease; }
+  .big-card:hover { border-color: var(--line-2); }
+  .big-card .pic { height: 280px; margin-bottom: 28px; border-radius: 16px; padding: 24px; --max-h: 230px; }
+  .big-card h3 { margin: 0 16px 10px; font-size: 30px; letter-spacing: -0.03em; font-weight: 700; }
+  .big-card > p { margin: 0 16px 22px; font-size: 17px; color: var(--fg-2); }
+  .big-card small { display: block; margin: 18px 16px 0; font-size: 14px; color: var(--muted); }
+  .tags { margin: 0 16px; padding: 0; list-style: none; display: flex; flex-wrap: wrap; gap: 8px; }
+  .tags li { padding: 7px 14px; border: 1px solid var(--line); border-radius: 999px; font-size: 14px; background: var(--bg-2); }
+  .axes li { font: 12.5px "Geist Mono", monospace; transition: color 200ms ease, border-color 200ms ease; }
+  .axes li.on { color: var(--accent); border-color: var(--accent-line); background: var(--accent-soft); }
+
+  /* vr */
+  .vr { border-top: 1px solid var(--line); border-bottom: 1px solid var(--line); background: var(--bg-2); }
+  .vr .wrap { display: grid; grid-template-columns: auto 1fr; gap: 72px; align-items: center; padding: 56px 0; }
+  .vr-frame { display: block; width: auto; height: 480px; border-radius: 16px; border: 1px solid var(--line); box-shadow: 0 24px 60px -24px rgba(0,0,0,.5); }
+  .vr h3 { margin: 0 0 8px; font-size: 32px; letter-spacing: -0.03em; font-weight: 700; }
+  .vr p { margin: 0; font-size: 18px; color: var(--fg-2); }
+  .vr-points { margin: 32px 0 0; padding: 0; list-style: none; display: grid; gap: 20px; max-width: 520px; }
+  .vr-points li { position: relative; padding-left: 30px; font-size: 15.5px; line-height: 1.5; color: var(--muted); }
+  .vr-points li::before { content: ""; position: absolute; left: 2px; top: 7px; width: 10px; height: 10px; border-radius: 50%; background: var(--accent); box-shadow: 0 0 0 4px var(--accent-soft); }
+  .vr-points b { display: block; color: var(--fg); font-weight: 600; font-size: 16.5px; margin-bottom: 2px; }
+
+  /* download */
+  .dl-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 14px 22px; margin-bottom: 36px; }
+  .dl-head .ver { font: 13px "Geist Mono", monospace; color: var(--muted); }
+  .news { margin: -8px 0 32px; border: 1px solid var(--accent-line); border-radius: 20px; padding: 26px 30px; background: var(--surface); position: relative; }
+  .news h3 { margin: 0 0 12px; font: 600 15px "Geist Mono", monospace; color: var(--accent); }
+  .news ul { margin: 0; padding-left: 20px; display: grid; gap: 8px; color: var(--fg-2); }
+  .news .close { position: absolute; top: 18px; right: 18px; height: 34px; font-size: 13px; }
+  .platforms { display: grid; grid-template-columns: repeat(3, 1fr); gap: 24px; align-items: start; }
+  .platform { border: 1px solid var(--line); border-radius: 22px; padding: 26px; display: flex; flex-direction: column; gap: 12px; background: var(--surface); }
+  .platform.mine { border-color: var(--accent-line); box-shadow: 0 0 0 1px var(--accent-line), 0 20px 50px -20px var(--accent-soft); }
+  .platform h3 { margin: 0 0 6px; font-size: 22px; font-weight: 700; letter-spacing: -0.02em; }
+  .file { display: flex; align-items: center; justify-content: space-between; height: 48px; padding: 0 16px; border: 1px solid var(--line); border-radius: 12px; font-size: 15px; text-decoration: none; background: var(--bg-2);
+    transition: border-color 140ms ease, background 140ms ease, transform 140ms ease; }
+  .file:hover { border-color: var(--accent-line); background: var(--surface-2); transform: translateY(-1px); }
+  .file b { color: var(--accent); font-weight: 700; }
+  .arch { margin: 8px 0 0; font: 500 12px "Geist Mono", monospace; color: var(--muted); }
+  .chips { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .chips .file { height: 42px; font-size: 14px; }
+  .server { margin-top: 12px; padding-top: 20px; border-top: 1px solid var(--line); display: flex; flex-direction: column; gap: 8px; }
+  .server h4 { margin: 0; font-size: 17px; font-weight: 600; letter-spacing: -0.01em; }
+  .lead-sm { margin: 0 0 2px; font-size: 14px; color: var(--muted); }
+  .cmd { display: flex; align-items: center; justify-content: space-between; gap: 8px; height: 42px; padding: 0 6px 0 14px; border: 1px solid var(--line); border-radius: 12px; background: var(--bg-2); }
+  .cmd code { font: 12.5px "Geist Mono", monospace; color: var(--fg-2); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .cmd .copy { flex: none; height: 30px; padding: 0 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); color: var(--fg); font: 500 12.5px "Geist", sans-serif; cursor: pointer; transition: border-color 140ms ease; }
+  .cmd .copy:hover { border-color: var(--accent-line); }
+  .note { margin: 4px 0 0; padding: 14px 16px; border-radius: 12px; background: var(--bg-2); font-size: 13.5px; color: var(--muted); line-height: 1.5; }
+
+  /* support */
+  .support-box { position: relative; overflow: hidden; border: 1px solid var(--accent-line); border-radius: 28px; background: var(--surface); padding: 64px; display: flex; align-items: center; gap: 48px; }
+  .support-box::before { content: ""; position: absolute; inset: -40% -10% auto 40%; height: 160%; background: radial-gradient(40% 40% at 60% 50%, var(--accent-soft), transparent 70%); pointer-events: none; }
+  .support-box > * { position: relative; }
+  .support-box h2 { margin: 0 0 10px; font-size: 40px; letter-spacing: -0.035em; font-weight: 700; }
+  .support-box p { margin: 0; color: var(--fg-2); font-size: 18px; max-width: 520px; }
+  .support-box .btns { margin-left: auto; display: flex; gap: 12px; }
+
+  /* footer */
+  .footer { border-top: 1px solid var(--line); }
+  .footer .wrap { padding: 36px 0; display: flex; align-items: center; flex-wrap: wrap; gap: 20px 32px; font-size: 14px; color: var(--muted); }
+  .footer .wordmark { font-size: 18px; gap: 8px; }
+  .footer .wordmark svg { width: 24px; height: 24px; }
+  .themes { display: flex; align-items: center; gap: 12px; margin-left: auto; }
+  .dots { display: flex; gap: 8px; }
+  .dot { width: 22px; height: 22px; border-radius: 50%; border: 0; padding: 0; cursor: pointer; background: linear-gradient(135deg, var(--dot-bg) 50%, var(--dot-accent) 50%);
+    box-shadow: 0 0 0 1px var(--line-2); transition: transform 140ms ease, box-shadow 140ms ease; }
+  .dot:hover { transform: scale(1.15); }
+  .dot[aria-pressed="true"] { box-shadow: 0 0 0 2px var(--bg), 0 0 0 4px var(--fg); }
+  .theme-name { min-width: 64px; color: var(--fg); font-weight: 500; }
+
+  @media (prefers-reduced-motion: reduce) {
+    .scroll, .ring, .tick { animation: none; }
+    .reveal { opacity: 1; transform: none; transition: none; }
+    .shot-tab i { animation: none !important; }
+    .shots img { transition: none; animation: none !important; }
+  }
+</style>
+</head>
+<body>
+
+<!-- Funsy's mark: a motion line crossed by the playhead, the played part dimmer. -->
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="funsy-mark" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"><polyline points="5,40 15,24 26,44 32,34" stroke-opacity=".42"/><polyline points="32,34 40,20 50,42 59,28"/></g><rect x="30.25" y="6" width="3.5" height="52" fill="currentColor"/><circle cx="32" cy="34" r="7" fill="currentColor"/></symbol></svg>
+
+<nav class="topbar" id="topbar"><div class="wrap">
+  <a class="wordmark" href="#top" aria-label="Funsy"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#funsy-mark"/></svg><span>funs<em>y</em></span></a>
+  <div class="nav"><a href="#sync">Sync</a><a href="#devices">Devices</a><a href="#download">Download</a></div>
+  <div class="top-right" data-live hidden><a class="btn ghost" href="#">Discord</a><a class="btn" href="#">Support on Patreon</a></div>
+</div></nav>
+
+<header class="hero" id="top"><div class="wrap">
+  <div class="hero-copy">
+    <h1>Your videos, your toys,<br>perfectly <em>in sync.</em></h1>
+    <p class="sub">One app plays your funscripts on every device while you watch in the player you already use, on your desktop or in VR.</p>
+    <div class="cta" id="hero-cta"></div>
+  </div>
+  <figure class="showcase" id="showcase">
+    <div class="stage"><div class="shots" id="shots"></div></div>
+    <figcaption class="shot-tabs" id="shot-tabs" role="tablist" aria-label="Funsy's features"></figcaption>
+  </figure>
+</div></header>
+
+<section class="players"><div class="wrap">
+  <h2>Works with your player</h2>
+  <ul>
+      <li class="player"><span class="app-icon pad" style="background: var(--accent)"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="var(--accent-fg)" d="M8 5.5v13a1 1 0 0 0 1.5.86l10.5-6.5a1 1 0 0 0 0-1.72L9.5 4.64A1 1 0 0 0 8 5.5Z"/></svg></span><span>Built-in player</span></li>
+      <li class="player"><span class="app-icon pad" style="background: #FF8800"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M12.0319 0c-.8823 0-1.0545.136-1.0545.136-.1738.056-.3556.255-.4105.43L9.683 3.3808c.4729.1729 1.3222.4266 2.2337.4266 1.0987 0 2.017-.3494 2.3763-.5075L13.4352.566c-.055-.1755-.237-.3707-.4067-.4374 0 0-.1142-.1286-.9966-.1286zm3.5645 7.455c-.3601.34-1.3276.9373-3.6797.9373-2.2929 0-3.189-.5678-3.5213-.9113l-1.3887 4.4227c.2272.3614 1.2539 1.5594 4.8847 1.5594 3.7569 0 4.8539-1.3467 5.0649-1.6737zm-8.5897 4.4487l-1.0025 3.1922H4.3428c-.2486 0-.5097.1932-.5826.4315l-2.334 7.6317a.3962.3962 0 0 0-.0169.1537c-.0008.0053-.002.0099-.002.016 0 .0839.0233.226.0233.226.0322.2456.2612.4452.5098.4452h20.1192c.2487 0 .4768-.1994.5098-.4453 0 0 .0234-.142.0234-.226a.0245.0245 0 0 0-.0025-.01.3201.3201 0 0 0 .0024-.0313.4096.4096 0 0 0-.019-.1282l-2.3339-7.6318c-.0729-.2383-.334-.4314-.5826-.4314h-1.6636l.2005.6391c-.2407.4854-1.4886 2.38-6.3027 2.38-4.6003 0-5.8288-1.73-6.1107-2.3072z"/></svg></span><span>VLC</span></li>
+      <li class="player"><span class="app-icon pad" style="background: #691F69"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm.312 22.775c-6.153 0-11.142-4.988-11.142-11.142S6.16.491 12.312.491c6.154 0 11.142 4.989 11.142 11.142s-4.988 11.142-11.142 11.142zm.643-20.464a8.587 8.587 0 1 0 0 17.174 8.587 8.587 0 0 0 0-17.174zm-1.113 15.257a5.517 5.517 0 1 1 0-11.034 5.517 5.517 0 0 1 0 11.034zm-1.399-7.995L14.4 11.97l-3.957 2.518V9.573z"/></svg></span><span>MPV</span></li>
+      <li class="player"><span class="app-icon pad-sm" style="background: #f4f4f4"><img src="assets/players/mpchc.png" alt="" loading="lazy"></span><span>MPC-HC /<br>MPC-BE</span></li>
+      <li class="player"><span class="app-icon pad" style="background: #17B2E7"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M12.03.047c-.226 0-.452.107-.669.324-.922.922-1.842 1.845-2.763 2.768-.233.233-.455.48-.703.695-.31.267-.405.583-.399.988.02 1.399.008 2.799.008 4.198 0 1.453-.002 2.907 0 4.36 0 .11.002.223.03.327.087.337.303.393.546.15 1.31-1.31 2.618-2.622 3.928-3.933l4.449-4.453c.43-.431.43-.905 0-1.336L12.697.37c-.216-.217-.442-.324-.668-.324zm7.224 7.23c-.223 0-.445.104-.65.309L14.82 11.37c-.428.429-.427.895 0 1.322l3.76 3.766c.44.44.908.44 1.346.002 1.215-1.216 2.427-2.433 3.644-3.647.182-.18.353-.364.43-.615v-.33c-.077-.251-.246-.436-.428-.617-1.224-1.22-2.443-2.445-3.666-3.668-.205-.205-.429-.307-.652-.307zM4.18 7.611c-.086.014-.145.094-.207.157L.209 11.572c-.28.284-.278.677.004.96l2.043 2.046c.59.59 1.177 1.182 1.767 1.772.169.168.33.139.416-.084.044-.114.062-.242.063-.364.004-1.283.004-2.567.004-3.851h-.002V8.184c0-.085-.01-.169-.022-.252-.019-.135-.072-.258-.207-.309a.186.186 0 0 0-.095-.012zm7.908 6.838c-.224 0-.447.106-.656.315L7.66 18.537c-.433.434-.433.899.002 1.334 1.215 1.216 2.43 2.43 3.643 3.649.18.18.361.354.611.433h.33c.244-.069.423-.226.598-.402 1.222-1.23 2.45-2.453 3.676-3.68.43-.43.427-.905-.004-1.338l-3.772-3.773c-.208-.208-.432-.311-.656-.31z"/></svg></span><span>Kodi</span></li>
+      <li class="player"><span class="app-icon pad" style="background: #1f1f1f"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#EBAF00" d="M3.987 8.409c-.96 0-1.587.28-2.12.933v-.72H0v8.88s.038.018.127.037c.138.03.821.187 1.331-.249.441-.377.542-.814.542-1.318v-1.283c.533.573 1.147.813 2 .813 1.84 0 3.253-1.493 3.253-3.48 0-2.12-1.36-3.613-3.266-3.613Zm16.748 5.595.406.591c.391.614.894.906 1.492.908.621-.012 1.064-.562 1.226-.755 0 0-.307-.27-.686-.72-.517-.614-1.214-1.755-1.24-1.803l-1.198 1.779Zm-3.205-1.955c0-2.08-1.52-3.64-3.52-3.64s-3.467 1.587-3.467 3.573a3.48 3.48 0 0 0 3.507 3.52c1.413 0 2.626-.84 3.253-2.293h-2.04l-.093.093c-.427.4-.72.533-1.227.533-.787 0-1.373-.506-1.453-1.266h4.986c.04-.214.054-.307.054-.52Zm-7.671-.219c0 .769.11 1.701.868 2.722l.056.069c-.306.526-.742.88-1.248.88-.399 0-.814-.211-1.138-.579a2.177 2.177 0 0 1-.538-1.441V6.409H9.86l-.001 5.421Zm9.283 3.46h-2.39l2.247-3.332-2.247-3.335h2.39l2.248 3.335-2.248 3.332Zm1.593-1.286Zm-17.162-.342c-.933 0-1.68-.773-1.68-1.72s.76-1.666 1.68-1.666c.92 0 1.68.733 1.68 1.68 0 .946-.733 1.706-1.68 1.706Zm18.361-1.974L24 8.622h-2.391l-.87 1.293 1.195 1.773Zm-9.404-.466c.16-.706.72-1.133 1.493-1.133.773 0 1.373.467 1.507 1.133h-3Z"/></svg></span><span>Plex</span></li>
+      <li class="player"><span class="app-icon pad" style="background: #00A4DC"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M12 .002C8.826.002-1.398 18.537.16 21.666c1.56 3.129 22.14 3.094 23.682 0C25.384 18.573 15.177 0 12 0zm7.76 18.949c-1.008 2.028-14.493 2.05-15.514 0C3.224 16.9 9.92 4.755 12.003 4.755c2.081 0 8.77 12.166 7.759 14.196zM12 9.198c-1.054 0-4.446 6.15-3.93 7.189.518 1.04 7.348 1.027 7.86 0 .511-1.027-2.874-7.19-3.93-7.19z"/></svg></span><span>Jellyfin</span></li>
+      <li class="player"><span class="app-icon pad" style="background: #52B54B"><svg viewBox="0 0 24 24" aria-hidden="true"><path fill="#fff" d="M11.041 0c-.007 0-1.456 1.43-3.219 3.176L4.615 6.352l.512.513.512.512-2.819 2.791L0 12.961l1.83 1.848c1.006 1.016 2.438 2.46 3.182 3.209l1.351 1.359.508-.496c.28-.273.515-.498.524-.498.008 0 1.266 1.264 2.794 2.808L12.97 24l.187-.182c.23-.225 5.007-4.95 5.717-5.656l.52-.516-.502-.513c-.276-.282-.5-.52-.496-.53.003-.009 1.264-1.26 2.802-2.783 1.538-1.522 2.8-2.776 2.803-2.785.005-.012-3.617-3.684-6.107-6.193L17.65 4.6l-.505.505c-.279.278-.517.501-.53.497-.013-.005-1.27-1.267-2.793-2.805A449.655 449.655 0 0011.041 0zM9.223 7.367c.091.038 7.951 4.608 7.957 4.627.003.013-1.781 1.056-3.965 2.32a999.898 999.898 0 01-3.996 2.307c-.019.006-.026-1.266-.026-4.629 0-3.7.007-4.634.03-4.625Z"/></svg></span><span>Emby</span></li>
+      <li class="player"><span class="app-icon full" style=""><img src="assets/players/heresphere.png" alt="" loading="lazy"></span><span>HereSphere</span></li>
+      <li class="player"><span class="app-icon full" style=""><img src="assets/players/deovr.png" alt="" loading="lazy"></span><span>DeoVR</span></li>
+      <li class="player"><span class="app-icon full" style=""><img src="assets/players/ofs.png" alt="" loading="lazy"></span><span>OFS</span></li>
+  </ul>
+</div></section>
+
+<section class="section one-app" id="one-app"><div class="wrap">
+  <div class="spot-head reveal">
+    <div><p class="eyebrow">One app</p><h2 class="h2">Everything in one app.</h2></div>
+    <p class="lead">Your toys, your scripts and your player all connect inside Funsy. There's nothing else to install, open or keep running.</p>
+  </div>
+  <div class="modes three reveal">
+    <div class="mode"><h3>Desktop or VR, one setup</h3><p>Go from your screen to your headset without changing anything else.</p></div>
+    <div class="mode"><h3>Ready next time</h3><p>Funsy remembers your devices. Open it, pick a video, press play.</p></div>
+    <div class="mode"><h3>Windows, macOS and Linux</h3><p>The same app, whichever computer you use.</p></div>
+  </div>
+</div></section>
+
+<section class="section" id="sync"><div class="wrap">
+  <div class="spot-head reveal">
+    <div><p class="eyebrow">Sync</p><h2 class="h2">Every device on the same beat.</h2></div>
+    <p class="lead">Play your Handy, a Bluetooth toy and a stroker at the same time. They all move together, right on time with the video.</p>
+  </div>
+  <div class="sync-panel reveal">
+    <div class="wave-rows" id="site-wave-rows" data-loop-from="1121962" data-loop-ms="38379">
+<div data-wave-row class="group/row flex items-center gap-[12px] h-[36px] flex-shrink-0 relative rounded-[8px] px-[6px]">
+  <span style="background: #f0a675;" class="w-[18px] h-[18px] rounded-[5px] border-none p-0 inline-flex items-center justify-center font-mono text-[11px] font-bold text-white shrink-0 tracking-[-0.02em] [text-shadow:0_0_1px_rgba(0,0,0,0.55),0_1px_1.5px_rgba(0,0,0,0.40)] shadow-[0_1px_2px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(0,0,0,0.10)]">1</span>
+  <div class="w-[140px] flex-shrink-0 font-mono text-[10.5px] text-app-muted leading-[1.2] flex items-center gap-[6px] justify-end">
+    <div class="flex-1 min-w-0 text-right truncate">
+      <b class="font-medium text-app-fg2">L0</b> Stroke
+      <div class="flex justify-end min-w-0 text-app-muted2 text-[10px]"><span class="truncate">→ The Handy</span></div>
+    </div>
+  </div>
+  <!-- <FunsyWeb.Components.WaveCanvas.wave_canvas> lib/funsy_web/components/wave_canvas.ex:23 (funsy) --><div id="site-wave-1" phx-hook="FunsyWeb.Components.WaveCanvas.WaveformRow" phx-update="ignore" data-color="#f0a675" data-keyframes="[[1083583,0],[1084180,100],[1084799,50],[1085397,100],[1085994,0],[1086591,50],[1087188,0],[1087786,100],[1088383,50],[1088980,100],[1089599,0],[1090196,50],[1090794,0],[1091391,100],[1091989,50],[1092586,100],[1093183,0],[1093781,50],[1094399,0],[1094996,100],[1095594,50],[1096191,100],[1096788,0],[1097386,50],[1097983,0],[1098580,100],[1099199,50],[1099797,100],[1100394,0],[1100991,50],[1101589,0],[1102186,100],[1102783,50],[1103381,100],[1103999,0],[1104596,50],[1105194,0],[1105791,100],[1106388,50],[1106986,100],[1107583,0],[1108180,50],[1108799,0],[1109397,100],[1109994,50],[1110591,100],[1111167,0],[1113978,50],[1116841,0],[1116941,15],[1117008,0],[1117074,15],[1117141,0],[1117208,15],[1117274,0],[1117341,10],[1117408,0],[1117474,10],[1117541,0],[1117608,10],[1117674,0],[1117741,10],[1117808,0],[1117874,10],[1117941,0],[1118007,10],[1118074,0],[1118141,10],[1118207,0],[1118274,7],[1118341,0],[1118407,7],[1118474,0],[1118541,5],[1118607,0],[1118674,5],[1118741,0],[1118807,4],[1118874,0],[1118941,4],[1119007,0],[1119074,4],[1119141,0],[1119207,4],[1119274,0],[1120245,50],[1120767,0],[1121365,50],[1121962,0],[1122559,100],[1123178,50],[1123776,100],[1124373,0],[1124970,50],[1125567,0],[1126165,100],[1126762,50],[1127359,100],[1127978,0],[1128575,50],[1129173,0],[1129770,100],[1130368,50],[1130965,100],[1131562,0],[1132160,50],[1132778,0],[1133375,100],[1133973,50],[1134570,100],[1135167,0],[1135765,50],[1136362,0],[1136959,100],[1137578,50],[1138176,100],[1138773,0],[1139370,50],[1139968,0],[1140565,100],[1141162,50],[1141760,100],[1142378,0],[1142975,50],[1143573,0],[1144170,100],[1144767,50],[1145365,100],[1145962,0],[1146559,50],[1147178,0],[1147776,100],[1148373,50],[1148970,100],[1149546,0],[1152357,50],[1155220,0],[1155320,15],[1155387,0],[1155453,15],[1155520,0],[1155587,15],[1155653,0],[1155720,10],[1155787,0],[1155853,10],[1155920,0],[1155987,10],[1156053,0],[1156120,10],[1156187,0],[1156253,10],[1156320,0],[1156386,10],[1156453,0],[1156520,10],[1156586,0],[1156653,7],[1156720,0],[1156786,7],[1156853,0],[1156920,5],[1156986,0],[1157053,5],[1157120,0],[1157186,4],[1157253,0],[1157320,4],[1157386,0],[1157453,4],[1157520,0],[1157586,4],[1157653,0],[1158624,50],[1159146,0],[1159744,50],[1160341,0],[1160938,100],[1161557,50],[1162155,100],[1162752,0],[1163349,50],[1163946,0],[1164544,100],[1165141,50],[1165738,100],[1166357,0],[1166954,50],[1167552,0],[1168149,100],[1168747,50],[1169344,100],[1169941,0],[1170539,50],[1171157,0],[1171754,100],[1172352,50],[1172949,100],[1173546,0],[1174144,50],[1174741,0],[1175338,100],[1175957,50],[1176555,100],[1177152,0],[1177749,50],[1178347,0],[1178944,100],[1179541,50],[1180139,100],[1180757,0],[1181354,50],[1181952,0],[1182549,100],[1183146,50],[1183744,100],[1184341,0],[1184938,50],[1185557,0],[1186155,100],[1186752,50],[1187349,100],[1187925,0],[1190736,50],[1193599,0],[1193699,15],[1193766,0],[1193832,15],[1193899,0],[1193966,15],[1194032,0],[1194099,10],[1194166,0],[1194232,10],[1194299,0],[1194366,10],[1194432,0],[1194499,10],[1194566,0],[1194632,10],[1194699,0],[1194765,10],[1194832,0],[1194899,10],[1194965,0],[1195032,7],[1195099,0],[1195165,7],[1195232,0],[1195299,5],[1195365,0],[1195432,5],[1195499,0],[1195565,4],[1195632,0],[1195699,4],[1195765,0],[1195832,4],[1195899,0],[1195965,4],[1196032,0],[1197003,50],[1197525,0],[1198123,50]]" data-chart-style="smooth" data-time-event="player:time" data-window-ms="22000" class="flex-1 h-[32px] bg-app-surface border border-app-line rounded-[6px] relative overflow-hidden group-data-[fullscreen=1]/fs:bg-white/[0.05] group-data-[fullscreen=1]/fs:border-white/[0.1]">
+  <svg viewBox="0 0 1000 32" preserveAspectRatio="none" class="block w-full h-full">
+    <defs>
+      <linearGradient id="site-wave-g-1" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="#f0a675" stop-opacity="0.32"></stop>
+        <stop offset="100%" stop-color="#f0a675" stop-opacity="0"></stop>
+      </linearGradient>
+      <linearGradient id="site-wave-fade-1" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0%" stop-color="var(--surface)" stop-opacity="1"></stop>
+        <stop offset="8%" stop-color="var(--surface)" stop-opacity="0"></stop>
+        <stop offset="92%" stop-color="var(--surface)" stop-opacity="0"></stop>
+        <stop offset="100%" stop-color="var(--surface)" stop-opacity="1"></stop>
+      </linearGradient>
+    </defs>
+    <path data-wave-fill d="" fill="url(#site-wave-g-1)"></path>
+    <path data-wave-stroke d="" stroke="#f0a675" stroke-width="1.6" fill="none" opacity="0.95" stroke-linejoin="round" stroke-linecap="round"></path>
+    <path data-wave-dots d="" stroke="#f0a675" stroke-width="3.2" stroke-linecap="round" vector-effect="non-scaling-stroke" fill="none" opacity="0.9"></path>
+    <rect x="0" y="0" width="1000" height="32" fill="url(#site-wave-fade-1)"></rect>
+  </svg>
+  <div class="absolute top-[-2px] bottom-[-2px] w-[1.5px] bg-app-fg pointer-events-none" style="left: 18%; box-shadow: 0 0 6px var(--fg);">
+    <span class="absolute top-[-3px] left-[-3px] w-[8px] h-[5px] bg-app-fg rounded-[2px]"></span>
+  </div>
+  <div data-wave-ball class="absolute w-[8px] h-[8px] rounded-full bg-app-bg pointer-events-none" style="left: calc(18% - 4px); top: calc(78.5% - 4px); border: 2px solid #f0a675; box-shadow: 0 0 8px #f0a675; transition: top 120ms;"></div>
+  <div data-wave-value class="absolute top-[4px] right-[6px] px-[6px] py-[1px] rounded-full font-mono text-[10px] font-medium leading-[14.5px]" style="color: #f0a675; background: color-mix(in oklab, #f0a675 18%, var(--surface)); border: 1px solid color-mix(in oklab, #f0a675 38%, transparent);">
+    000
+  </div>
+</div>
+<!-- </FunsyWeb.Components.WaveCanvas.wave_canvas> -->
+</div>
+
+<div data-wave-row class="group/row flex items-center gap-[12px] h-[36px] flex-shrink-0 relative rounded-[8px] px-[6px]">
+  <span style="background: #9ec7b6;" class="w-[18px] h-[18px] rounded-[5px] border-none p-0 inline-flex items-center justify-center font-mono text-[11px] font-bold text-white shrink-0 tracking-[-0.02em] [text-shadow:0_0_1px_rgba(0,0,0,0.55),0_1px_1.5px_rgba(0,0,0,0.40)] shadow-[0_1px_2px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(0,0,0,0.10)]">2</span>
+  <div class="w-[140px] flex-shrink-0 font-mono text-[10.5px] text-app-muted leading-[1.2] flex items-center gap-[6px] justify-end">
+    <div class="flex-1 min-w-0 text-right truncate">
+      <b class="font-medium text-app-fg2">V0</b> Vibrate
+      <div class="flex justify-end min-w-0 text-app-muted2 text-[10px]"><span class="truncate">→ Lovense Edge 2</span><span class="shrink-0">&nbsp;· V0</span></div>
+    </div>
+  </div>
+  <!-- <FunsyWeb.Components.WaveCanvas.wave_canvas> lib/funsy_web/components/wave_canvas.ex:23 (funsy) --><div id="site-wave-2" phx-hook="FunsyWeb.Components.WaveCanvas.WaveformRow" phx-update="ignore" data-color="#9ec7b6" data-keyframes="[[1084180,0],[1084688,10],[1084788,35],[1086591,0],[1087071,10],[1087171,35],[1088980,0],[1089488,10],[1089588,35],[1091391,0],[1091871,10],[1091971,35],[1093781,0],[1094288,10],[1094388,35],[1096191,0],[1096671,10],[1096771,35],[1098580,0],[1099088,10],[1099188,35],[1100991,0],[1101471,10],[1101571,35],[1103402,0],[1103888,10],[1103988,35],[1105792,0],[1106271,10],[1106371,35],[1108202,0],[1108688,10],[1108788,35],[1110591,0],[1111134,35],[1113002,0],[1116920,0],[1117144,45],[1117978,40],[1120370,0],[1120504,0],[1120781,10],[1120881,35],[1122559,0],[1123067,10],[1123167,35],[1124970,0],[1125450,10],[1125550,35],[1127359,0],[1127867,10],[1127967,35],[1129770,0],[1130250,10],[1130350,35],[1132160,0],[1132667,10],[1132767,35],[1134570,0],[1135050,10],[1135150,35],[1136959,0],[1137467,10],[1137567,35],[1139370,0],[1139850,10],[1139950,35],[1141781,0],[1142267,10],[1142367,35],[1144171,0],[1144650,10],[1144750,35],[1146581,0],[1147067,10],[1147167,35],[1148970,0],[1149513,35],[1151381,0],[1155299,0],[1155523,45],[1156357,40],[1158749,0],[1158883,0],[1159160,10],[1159260,35],[1160938,0],[1161446,10],[1161546,35],[1163349,0],[1163829,10],[1163929,35],[1165738,0],[1166246,10],[1166346,35],[1168149,0],[1168629,10],[1168729,35],[1170539,0],[1171046,10],[1171146,35],[1172949,0],[1173429,10],[1173529,35],[1175338,0],[1175846,10],[1175946,35],[1177749,0],[1178229,10],[1178329,35],[1180160,0],[1180646,10],[1180746,35],[1182550,0],[1183029,10],[1183129,35],[1184960,0],[1185446,10],[1185546,35],[1187349,0],[1187892,35],[1189760,0],[1193678,0],[1193902,45],[1194736,40],[1197128,0],[1197262,0],[1197539,10],[1197639,35]]" data-chart-style="smooth" data-time-event="player:time" data-window-ms="22000" class="flex-1 h-[32px] bg-app-surface border border-app-line rounded-[6px] relative overflow-hidden group-data-[fullscreen=1]/fs:bg-white/[0.05] group-data-[fullscreen=1]/fs:border-white/[0.1]">
+  <svg viewBox="0 0 1000 32" preserveAspectRatio="none" class="block w-full h-full">
+    <defs>
+      <linearGradient id="site-wave-g-2" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="#9ec7b6" stop-opacity="0.32"></stop>
+        <stop offset="100%" stop-color="#9ec7b6" stop-opacity="0"></stop>
+      </linearGradient>
+      <linearGradient id="site-wave-fade-2" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0%" stop-color="var(--surface)" stop-opacity="1"></stop>
+        <stop offset="8%" stop-color="var(--surface)" stop-opacity="0"></stop>
+        <stop offset="92%" stop-color="var(--surface)" stop-opacity="0"></stop>
+        <stop offset="100%" stop-color="var(--surface)" stop-opacity="1"></stop>
+      </linearGradient>
+    </defs>
+    <path data-wave-fill d="" fill="url(#site-wave-g-2)"></path>
+    <path data-wave-stroke d="" stroke="#9ec7b6" stroke-width="1.6" fill="none" opacity="0.95" stroke-linejoin="round" stroke-linecap="round"></path>
+    <path data-wave-dots d="" stroke="#9ec7b6" stroke-width="3.2" stroke-linecap="round" vector-effect="non-scaling-stroke" fill="none" opacity="0.9"></path>
+    <rect x="0" y="0" width="1000" height="32" fill="url(#site-wave-fade-2)"></rect>
+  </svg>
+  <div class="absolute top-[-2px] bottom-[-2px] w-[1.5px] bg-app-fg pointer-events-none" style="left: 18%; box-shadow: 0 0 6px var(--fg);">
+    <span class="absolute top-[-3px] left-[-3px] w-[8px] h-[5px] bg-app-fg rounded-[2px]"></span>
+  </div>
+  <div data-wave-ball class="absolute w-[8px] h-[8px] rounded-full bg-app-bg pointer-events-none" style="left: calc(18% - 4px); top: calc(78.5% - 4px); border: 2px solid #9ec7b6; box-shadow: 0 0 8px #9ec7b6; transition: top 120ms;"></div>
+  <div data-wave-value class="absolute top-[4px] right-[6px] px-[6px] py-[1px] rounded-full font-mono text-[10px] font-medium leading-[14.5px]" style="color: #9ec7b6; background: color-mix(in oklab, #9ec7b6 18%, var(--surface)); border: 1px solid color-mix(in oklab, #9ec7b6 38%, transparent);">
+    000
+  </div>
+</div>
+<!-- </FunsyWeb.Components.WaveCanvas.wave_canvas> -->
+</div>
+
+<div data-wave-row class="group/row flex items-center gap-[12px] h-[36px] flex-shrink-0 relative rounded-[8px] px-[6px]">
+  <span style="background: #c8a8e0;" class="w-[18px] h-[18px] rounded-[5px] border-none p-0 inline-flex items-center justify-center font-mono text-[11px] font-bold text-white shrink-0 tracking-[-0.02em] [text-shadow:0_0_1px_rgba(0,0,0,0.55),0_1px_1.5px_rgba(0,0,0,0.40)] shadow-[0_1px_2px_rgba(0,0,0,0.20),inset_0_0_0_1px_rgba(0,0,0,0.10)]">3</span>
+  <div class="w-[140px] flex-shrink-0 font-mono text-[10.5px] text-app-muted leading-[1.2] flex items-center gap-[6px] justify-end">
+    <div class="flex-1 min-w-0 text-right truncate">
+      <b class="font-medium text-app-fg2">V0</b> Vibrate
+      <div class="flex justify-end min-w-0 text-app-muted2 text-[10px]"><span class="truncate">→ Lovense Edge 2</span><span class="shrink-0">&nbsp;· V1</span></div>
+    </div>
+  </div>
+  <!-- <FunsyWeb.Components.WaveCanvas.wave_canvas> lib/funsy_web/components/wave_canvas.ex:23 (funsy) --><div id="site-wave-3" phx-hook="FunsyWeb.Components.WaveCanvas.WaveformRow" phx-update="ignore" data-color="#c8a8e0" data-keyframes="[[1084180,0],[1084688,10],[1084788,35],[1086591,0],[1087071,10],[1087171,35],[1088980,0],[1089488,10],[1089588,35],[1091391,0],[1091871,10],[1091971,35],[1093781,0],[1094288,10],[1094388,35],[1096191,0],[1096671,10],[1096771,35],[1098580,0],[1099088,10],[1099188,35],[1100991,0],[1101471,10],[1101571,35],[1103402,0],[1103888,10],[1103988,35],[1105792,0],[1106271,10],[1106371,35],[1108202,0],[1108688,10],[1108788,35],[1110591,0],[1111134,35],[1113002,0],[1116920,0],[1117144,45],[1117978,40],[1120370,0],[1120504,0],[1120781,10],[1120881,35],[1122559,0],[1123067,10],[1123167,35],[1124970,0],[1125450,10],[1125550,35],[1127359,0],[1127867,10],[1127967,35],[1129770,0],[1130250,10],[1130350,35],[1132160,0],[1132667,10],[1132767,35],[1134570,0],[1135050,10],[1135150,35],[1136959,0],[1137467,10],[1137567,35],[1139370,0],[1139850,10],[1139950,35],[1141781,0],[1142267,10],[1142367,35],[1144171,0],[1144650,10],[1144750,35],[1146581,0],[1147067,10],[1147167,35],[1148970,0],[1149513,35],[1151381,0],[1155299,0],[1155523,45],[1156357,40],[1158749,0],[1158883,0],[1159160,10],[1159260,35],[1160938,0],[1161446,10],[1161546,35],[1163349,0],[1163829,10],[1163929,35],[1165738,0],[1166246,10],[1166346,35],[1168149,0],[1168629,10],[1168729,35],[1170539,0],[1171046,10],[1171146,35],[1172949,0],[1173429,10],[1173529,35],[1175338,0],[1175846,10],[1175946,35],[1177749,0],[1178229,10],[1178329,35],[1180160,0],[1180646,10],[1180746,35],[1182550,0],[1183029,10],[1183129,35],[1184960,0],[1185446,10],[1185546,35],[1187349,0],[1187892,35],[1189760,0],[1193678,0],[1193902,45],[1194736,40],[1197128,0],[1197262,0],[1197539,10],[1197639,35]]" data-chart-style="smooth" data-time-event="player:time" data-window-ms="22000" class="flex-1 h-[32px] bg-app-surface border border-app-line rounded-[6px] relative overflow-hidden group-data-[fullscreen=1]/fs:bg-white/[0.05] group-data-[fullscreen=1]/fs:border-white/[0.1]">
+  <svg viewBox="0 0 1000 32" preserveAspectRatio="none" class="block w-full h-full">
+    <defs>
+      <linearGradient id="site-wave-g-3" x1="0" x2="0" y1="0" y2="1">
+        <stop offset="0%" stop-color="#c8a8e0" stop-opacity="0.32"></stop>
+        <stop offset="100%" stop-color="#c8a8e0" stop-opacity="0"></stop>
+      </linearGradient>
+      <linearGradient id="site-wave-fade-3" x1="0" x2="1" y1="0" y2="0">
+        <stop offset="0%" stop-color="var(--surface)" stop-opacity="1"></stop>
+        <stop offset="8%" stop-color="var(--surface)" stop-opacity="0"></stop>
+        <stop offset="92%" stop-color="var(--surface)" stop-opacity="0"></stop>
+        <stop offset="100%" stop-color="var(--surface)" stop-opacity="1"></stop>
+      </linearGradient>
+    </defs>
+    <path data-wave-fill d="" fill="url(#site-wave-g-3)"></path>
+    <path data-wave-stroke d="" stroke="#c8a8e0" stroke-width="1.6" fill="none" opacity="0.95" stroke-linejoin="round" stroke-linecap="round"></path>
+    <path data-wave-dots d="" stroke="#c8a8e0" stroke-width="3.2" stroke-linecap="round" vector-effect="non-scaling-stroke" fill="none" opacity="0.9"></path>
+    <rect x="0" y="0" width="1000" height="32" fill="url(#site-wave-fade-3)"></rect>
+  </svg>
+  <div class="absolute top-[-2px] bottom-[-2px] w-[1.5px] bg-app-fg pointer-events-none" style="left: 18%; box-shadow: 0 0 6px var(--fg);">
+    <span class="absolute top-[-3px] left-[-3px] w-[8px] h-[5px] bg-app-fg rounded-[2px]"></span>
+  </div>
+  <div data-wave-ball class="absolute w-[8px] h-[8px] rounded-full bg-app-bg pointer-events-none" style="left: calc(18% - 4px); top: calc(78.5% - 4px); border: 2px solid #c8a8e0; box-shadow: 0 0 8px #c8a8e0; transition: top 120ms;"></div>
+  <div data-wave-value class="absolute top-[4px] right-[6px] px-[6px] py-[1px] rounded-full font-mono text-[10px] font-medium leading-[14.5px]" style="color: #c8a8e0; background: color-mix(in oklab, #c8a8e0 18%, var(--surface)); border: 1px solid color-mix(in oklab, #c8a8e0 38%, transparent);">
+    000
+  </div>
+</div>
+<!-- </FunsyWeb.Components.WaveCanvas.wave_canvas> -->
+</div>
+
+    </div>
+  </div>
+</div></section>
+
+<section class="section" id="devices" style="padding-top: 24px"><div class="wrap">
+  <div class="handy reveal">
+    <div class="pic"><img data-shot="handy" alt="Funsy's dialog for adding a Handy, with its ways to connect" style="--r: 18px"></div>
+    <div>
+      <p class="eyebrow">The Handy</p>
+      <h2 class="h2">The best way to play your Handy.</h2>
+      <p class="lead">Funsy supports every way the Handy can connect, all built in.</p>
+      <div class="modes">
+        <div class="mode"><h3>Wi-Fi</h3><p>The script is uploaded to the Handy for the smoothest motion.</p></div>
+        <div class="mode"><h3>Wi-Fi streaming</h3><p>Plays at once, with no upload to wait for.</p></div>
+        <div class="mode"><h3>Bluetooth</h3><p>No internet needed. Built into Funsy.</p></div>
+        <div class="mode"><h3>Bluetooth in the browser</h3><p>Connect from Chrome or Edge on any computer near the Handy.</p></div>
+      </div>
+      <ul class="checks"><li>Stays in sync for hours</li><li>Remembers your offset and stroke range</li></ul>
+    </div>
+  </div>
+</div></section>
+
+<section class="section" style="padding-top: 0"><div class="wrap">
+  <div class="pair reveal">
+    <article class="big-card">
+      <div class="pic"><img data-shot="toys" alt="Funsy's Bluetooth menu with three toys found"></div>
+      <h3>Bluetooth toys</h3>
+      <p>Bluetooth is built in. Your toys connect straight to Funsy, with nothing else to install.</p>
+      <ul class="tags"><li>Lovense</li><li>Kiiroo</li><li>We-Vibe</li><li>Satisfyer</li><li>Svakom</li><li>Magic Motion</li><li>+ hundreds more</li></ul>
+      <small>Already use Intiface Central? Funsy works with it too.</small>
+    </article>
+    <article class="big-card">
+      <div class="pic"><img data-shot="strokers" alt="A multi-axis script wired to an SR6 in Funsy's mapping graph"></div>
+      <h3>Multi-axis strokers</h3>
+      <p>OSR2, SR6, SSR1 and other TCode strokers, plugged in over USB.</p>
+      <ul class="tags axes" id="axes"><li>Stroke</li><li>Surge</li><li>Sway</li><li>Twist</li><li>Roll</li><li>Pitch</li></ul>
+    </article>
+  </div>
+</div></section>
+
+<section class="vr"><div class="wrap reveal">
+  <img class="vr-frame" src="assets/vr-frame.webp" alt="A character from a VR video, one picture per eye" loading="lazy">
+  <div><h3>VR ready</h3><p>Watch in HereSphere or DeoVR on your headset. Funsy follows along.</p>
+    <ul class="vr-points">
+      <li><b>One setup for your screen and your headset.</b> Watch on your computer or in VR with the same devices and the same steps.</li>
+      <li><b>Nothing else to run on your computer.</b> Funsy talks to your headset and your toys directly.</li>
+      <li><b>Every device follows.</b> The Handy, Bluetooth toys and strokers all move in sync with what you watch.</li>
+    </ul></div>
+</div></section>
+
+<section class="section" id="download"><div class="wrap">
+  <div class="dl-head reveal">
+    <h2 class="h2">Download Funsy</h2>
+    <span class="ver" id="ver"></span>
+    <button class="link" id="news-toggle" aria-expanded="false" aria-controls="news" hidden>What's new</button>
+  </div>
+  <div class="news" id="news" hidden>
+    <button class="btn close" id="news-close">Close</button>
+    <h3 id="news-title"></h3>
+    <ul id="news-list"></ul>
+  </div>
+  <div class="platforms reveal">
+    <article class="platform" data-os="windows"><h3>Windows</h3>
+      <a class="file" data-asset="exe" href="https://github.com/funsy-app/funsy-app/releases/latest">Installer (.exe)<b>↓</b></a><a class="file" data-asset="msi" href="https://github.com/funsy-app/funsy-app/releases/latest">Installer (.msi)<b>↓</b></a>
+      <p class="note">Windows may warn that the app is unrecognised. Choose More info, then Run anyway.</p></article>
+    <article class="platform" data-os="macos"><h3>macOS</h3>
+      <a class="file" data-asset="dmg" href="https://github.com/funsy-app/funsy-app/releases/latest">Apple Silicon (.dmg)<b>↓</b></a>
+      <p class="note">First launch: right-click the app and choose Open.</p></article>
+    <article class="platform" data-os="linux"><h3>Linux</h3><div id="linux"></div>
+      <div class="server">
+        <h4>Server</h4>
+        <p class="lead-sm">Run Funsy on a home server and open it in your browser.</p>
+        <p class="arch">Release</p>
+        <div class="chips"><a class="file" data-asset="server-x86_64" href="https://github.com/funsy-app/funsy-app/releases/latest">x86_64 (.tar.gz)<b>↓</b></a><a class="file" data-asset="server-arm64" href="https://github.com/funsy-app/funsy-app/releases/latest">arm64 (.tar.gz)<b>↓</b></a></div>
+        <p class="arch">Docker</p>
+        <div class="cmd"><code>docker pull ghcr.io/funsy-app/funsy</code><button class="copy" type="button" data-copy="docker pull ghcr.io/funsy-app/funsy">Copy</button></div>
+      </div>
+    </article>
+  </div>
+</div></section>
+
+<section class="section" data-live hidden style="padding-top: 0"><div class="wrap">
+  <div class="support-box reveal">
+    <div><h2>Help Funsy grow</h2><p>Funsy is built by one developer. Patreon supporters keep it going.</p></div>
+    <div class="btns"><a class="btn lg primary" href="#">Support on Patreon</a><a class="btn lg" href="#">Join the Discord</a></div>
+  </div>
+</div></section>
+
+<footer class="footer"><div class="wrap">
+  <a class="wordmark" href="#top" aria-label="Funsy"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#funsy-mark"/></svg><span>funs<em>y</em></span></a>
+  <span>For adults (18+).</span>
+  <span>© 2026 Funsy</span>
+  <div class="themes">
+    <span>Funsy comes in 10 themes. Try one:</span>
+    <div class="dots" id="dots"></div>
+    <span class="theme-name" id="theme-name"></span>
+  </div>
+</div></footer>
+
+<script>
+const params = new URLSearchParams(location.search);
+const root = document.documentElement;
+
+/* ---------- themes ---------- */
+const THEMES = [
+  ["dark", "Dark", "#16110d", "#f0a675"], ["sunset", "Sunset", "#1c1628", "#e890c4"], ["midnight", "Midnight", "#0c121c", "#6cc7e8"],
+  ["forest", "Forest", "#131e18", "#a8d878"], ["mono", "Mono", "#161616", "#ffffff"], ["light", "Light", "#f7f2e8", "#d97a3a"],
+  ["blush", "Blush", "#faeef3", "#c4438a"], ["mist", "Mist", "#eef3f9", "#2a82b0"], ["sage", "Sage", "#eef4ed", "#5a8e3a"], ["paper", "Paper", "#f4f4f4", "#181818"],
+];
+/* ---------- the app's pictures in the hero ----------
+   One picture per feature, taken from the app in every theme
+   (priv/scratch/site_shots.sh); the page shows its own theme's. The progress
+   line under the current tab moves the carousel on when it fills, so a hover
+   that pauses it pauses the carousel too, and with reduced motion it stays. */
+const SHOTS = [
+  ["player", "Built-in player"],
+  ["vr", "Your VR player"],
+  ["mapping", "Multi-axis strokers"],
+  ["bluetooth", "Bluetooth built in"],
+];
+const shotsEl = document.getElementById("shots");
+const shotTabs = document.getElementById("shot-tabs");
+shotsEl.innerHTML = SHOTS.map(([id, label]) => `<img data-shot="${id}" alt="Funsy: ${label}" decoding="async">`).join("");
+shotTabs.innerHTML = SHOTS.map(([id, label]) =>
+  `<button class="shot-tab" role="tab" data-shot="${id}" aria-selected="false">${label}<i></i></button>`).join("");
+const paintShots = () => document.querySelectorAll("img[data-shot]").forEach((img) => {
+  img.src = `assets/shots/${img.dataset.shot}/${root.dataset.theme}.webp`;
+});
+const showShot = (id) => {
+  shotsEl.querySelectorAll("img").forEach((img) => img.classList.toggle("on", img.dataset.shot === id));
+  shotTabs.querySelectorAll(".shot-tab").forEach((tab) => {
+    tab.setAttribute("aria-selected", String(tab.dataset.shot === id));
+    tab.querySelector("i").replaceWith(document.createElement("i"));
+  });
+};
+shotTabs.addEventListener("click", (e) => {
+  const tab = e.target.closest(".shot-tab");
+  if (tab) showShot(tab.dataset.shot);
+});
+shotTabs.addEventListener("animationend", (e) => {
+  const i = SHOTS.findIndex(([id]) => id === e.target.parentElement.dataset.shot);
+  showShot(SHOTS[(i + 1) % SHOTS.length][0]);
+});
+paintShots();
+showShot(SHOTS.some(([id]) => id === params.get("shot")) ? params.get("shot") : SHOTS[0][0]);
+
+const dots = document.getElementById("dots");
+const themeName = document.getElementById("theme-name");
+const paintPicker = () => {
+  const current = root.dataset.theme;
+  dots.querySelectorAll(".dot").forEach((d) => d.setAttribute("aria-pressed", String(d.dataset.theme === current)));
+  themeName.textContent = THEMES.find(([id]) => id === current)?.[1] ?? "";
+};
+dots.innerHTML = THEMES.map(([id, name, bg, accent]) =>
+  `<button class="dot" data-theme="${id}" title="${name}" aria-label="${name} theme" style="--dot-bg:${bg};--dot-accent:${accent}"></button>`).join("");
+dots.addEventListener("click", (e) => {
+  const dot = e.target.closest(".dot");
+  if (!dot) return;
+  root.classList.add("theming");
+  root.dataset.theme = dot.dataset.theme;
+  sessionStorage.setItem("funsy-theme", dot.dataset.theme);
+  paintPicker();
+  paintShots();
+  setTimeout(() => root.classList.remove("theming"), 350);
+});
+paintPicker();
+
+/* ---------- tab icon in the theme's accent (as assets/js/lib/theme_favicon.ts in the app) ---------- */
+const darkBrowser = matchMedia("(prefers-color-scheme: dark)");
+const tabColor = (accent) => {
+  const m = accent.trim().match(/^#([0-9a-f]{6})$/i);
+  if (!m) return accent.trim();
+  const rgb = [0, 2, 4].map((i) => parseInt(m[1].slice(i, i + 2), 16));
+  const lin = (c) => ((c /= 255) <= 0.03928 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  const lum = 0.2126 * lin(rgb[0]) + 0.7152 * lin(rgb[1]) + 0.0722 * lin(rgb[2]);
+  const toward = darkBrowser.matches ? (lum < 0.2 ? 255 : null) : (lum > 0.7 ? 0 : null);
+  if (toward === null) return accent.trim();
+  return "#" + rgb.map((c) => Math.round(c + (toward - c) / 2).toString(16).padStart(2, "0")).join("");
+};
+const paintFavicon = () => {
+  const color = tabColor(getComputedStyle(root).getPropertyValue("--accent"));
+  const svg = `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" color="${color}"><g fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="round" stroke-linecap="round"><polyline points="3,30 16,50 32,28.3" stroke-opacity=".5"/><polyline points="32,28.3 44,12 61,36"/></g><rect x="29" y="4" width="6" height="56" fill="currentColor"/><circle cx="32" cy="28.3" r="9.5" fill="currentColor"/></svg>`;
+  document.querySelector('link[rel="icon"]').href = "data:image/svg+xml," + encodeURIComponent(svg);
+};
+new MutationObserver(paintFavicon).observe(root, { attributes: true, attributeFilter: ["data-theme"] });
+darkBrowser.addEventListener("change", paintFavicon);
+paintFavicon();
+
+/* ---------- visitor's platform ---------- */
+const detectOs = () => {
+  const ua = navigator.userAgent;
+  if (/Android|iPhone|iPad|Mobile/i.test(ua)) return "unknown";
+  if (/Windows/i.test(ua)) return "windows";
+  if (/Mac/i.test(ua)) return "macos";
+  if (/Linux|X11/i.test(ua)) return "linux";
+  return "unknown";
+};
+const os = ["windows", "macos", "linux", "unknown"].includes(params.get("os")) ? params.get("os") : detectOs();
+const RELEASES = "https://github.com/funsy-app/funsy-app/releases";
+// [button, what it is, the file it downloads]
+const HERO = {
+  windows: ["Download for Windows", "Windows 10 and 11 · 64-bit", "exe"],
+  macos: ["Download for macOS", "Apple Silicon", "dmg"],
+  linux: ["Download for Linux", "AppImage, x86_64", "appimage-x86_64"],
+};
+const paintHero = (version) => {
+  document.getElementById("hero-cta").innerHTML = os === "unknown"
+    ? `<p>Funsy runs on Windows, macOS and Linux.</p><a class="btn lg primary" href="#download">See downloads</a>`
+    : `<a class="btn lg primary" data-asset="${HERO[os][2]}" href="${RELEASES}/latest">↓ ${HERO[os][0]}</a><small>${version ? `${version} · ` : ""}${HERO[os][1]}</small><a class="link" href="#download">Other platforms</a>`;
+};
+paintHero();
+document.querySelector(`.platform[data-os="${os}"]`)?.classList.add("mine");
+
+const linuxFiles = [["AppImage", "appimage"], [".deb", "deb"], [".rpm", "rpm"], ["Arch package", "arch"]];
+document.getElementById("linux").innerHTML = ["x86_64", "arm64"].map((arch) =>
+  `<p class="arch">${arch}</p><div class="chips">${linuxFiles.map(([label, kind]) =>
+    `<a class="file" data-asset="${kind}-${arch}" href="${RELEASES}/latest">${label}<b>↓</b></a>`).join("")}</div>`).join("");
+
+document.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", async () => {
+  await navigator.clipboard?.writeText(b.dataset.copy);
+  b.textContent = "Copied";
+  setTimeout(() => (b.textContent = "Copy"), 1500);
+}));
+
+/* ---------- release info + what's new ---------- */
+const news = document.getElementById("news");
+const toggle = document.getElementById("news-toggle");
+const setNews = (open) => { news.hidden = !open; toggle.setAttribute("aria-expanded", String(open)); };
+toggle.addEventListener("click", () => setNews(news.hidden));
+document.getElementById("news-close").addEventListener("click", () => setNews(false));
+// Which release file each download button gets, by its name.
+const X64 = "(x86_64|amd64|x64)";
+const ARM = "(arm64|aarch64)";
+const ASSETS = {
+  exe: /\.exe$/i,
+  msi: /\.msi$/i,
+  dmg: /\.dmg$/i,
+  "appimage-x86_64": new RegExp(`${X64}.*\\.AppImage$`, "i"),
+  "appimage-arm64": new RegExp(`${ARM}.*\\.AppImage$`, "i"),
+  "deb-x86_64": new RegExp(`${X64}.*\\.deb$`, "i"),
+  "deb-arm64": new RegExp(`${ARM}.*\\.deb$`, "i"),
+  "rpm-x86_64": new RegExp(`${X64}.*\\.rpm$`, "i"),
+  "rpm-arm64": new RegExp(`${ARM}.*\\.rpm$`, "i"),
+  "arch-x86_64": new RegExp(`${X64}.*\\.pkg\\.tar\\.`, "i"),
+  "arch-arm64": new RegExp(`${ARM}.*\\.pkg\\.tar\\.`, "i"),
+  "server-x86_64": new RegExp(`server.*${X64}.*\\.tar\\.gz$`, "i"),
+  "server-arm64": new RegExp(`server.*${ARM}.*\\.tar\\.gz$`, "i"),
+};
+const ver = document.getElementById("ver");
+const noRelease = (text) => {
+  ver.textContent = text;
+  toggle.outerHTML = `<a class="link" href="${RELEASES}">See all releases</a>`;
+};
+const showRelease = (release) => {
+  const date = new Date(release.published_at).toLocaleDateString("en-GB", { day: "numeric", month: "long", year: "numeric" });
+  ver.textContent = `${release.tag_name} · released ${date}`;
+  paintHero(release.tag_name);
+  document.querySelectorAll("[data-asset]").forEach((link) => {
+    const asset = release.assets.find((a) => !/\.sig$/i.test(a.name) && ASSETS[link.dataset.asset]?.test(a.name));
+    if (asset) link.href = asset.browser_download_url;
+  });
+  // The changelog's bullet points, as plain text.
+  const points = (release.body || "").split("\n").map((l) => l.trim()).filter((l) => /^[-*] /.test(l))
+    .map((l) => l.slice(2).replace(/\*\*|__|`/g, ""));
+  if (!points.length) return;
+  document.getElementById("news-title").textContent = release.tag_name;
+  const list = document.getElementById("news-list");
+  list.replaceChildren(...points.map((p) => Object.assign(document.createElement("li"), { textContent: p })));
+  toggle.hidden = false;
+  if (params.get("news") === "open") setNews(true);
+};
+if (params.get("release") === "failed") noRelease("Couldn't load the latest version.");
+else fetch("https://api.github.com/repos/funsy-app/funsy-app/releases/latest", { headers: { Accept: "application/vnd.github+json" } })
+  .then((r) => (r.ok ? r.json().then(showRelease) : noRelease(r.status === 404 ? "The first release is on its way." : "Couldn't load the latest version.")))
+  .catch(() => noRelease("Couldn't load the latest version."));
+
+/* ---------- Patreon + Discord ---------- */
+if (params.get("live") === "1") document.querySelectorAll("[data-live]").forEach((el) => (el.hidden = false));
+
+/* ---------- top bar border on scroll ---------- */
+const topbar = document.getElementById("topbar");
+addEventListener("scroll", () => topbar.classList.toggle("scrolled", scrollY > 8), { passive: true });
+
+/* ---------- reveal ---------- */
+const io = new IntersectionObserver((entries) => entries.forEach((e) => {
+  if (e.isIntersecting) { e.target.classList.add("in"); io.unobserve(e.target); }
+}), { threshold: 0.15 });
+document.querySelectorAll(".reveal").forEach((el) => io.observe(el));
+
+/* ---------- axis chips light up one after another ---------- */
+const axes = [...document.querySelectorAll("#axes li")];
+let axis = 0;
+axes[0].classList.add("on");
+if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+  setInterval(() => { axes[axis].classList.remove("on"); axis = (axis + 1) % axes.length; axes[axis].classList.add("on"); }, 1500);
+}
+
+</script>
+<script src="assets/wave.js"></script>
+</body>
+</html>

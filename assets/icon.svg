@@ -1,0 +1,15 @@
+<!-- Funsy's favicon: the mark alone, bolder for tab size, in the Light theme's accent, or the Dark theme's on a dark browser. -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <style>
+    g { color: #d97a3a; }
+    @media (prefers-color-scheme: dark) { g { color: #f0a675; } }
+  </style>
+  <g>
+    <g fill="none" stroke="currentColor" stroke-width="8" stroke-linejoin="round" stroke-linecap="round">
+      <polyline points="3,30 16,50 32,28.3" stroke-opacity=".5"/>
+      <polyline points="32,28.3 44,12 61,36"/>
+    </g>
+    <rect x="29" y="4" width="6" height="56" fill="currentColor"/>
+    <circle cx="32" cy="28.3" r="9.5" fill="currentColor"/>
+  </g>
+</svg>

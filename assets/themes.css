@@ -1,0 +1,446 @@
+/* ==========================================================================
+   Funsy — Themes
+   Color tokens per theme. Non-color tokens live in app.css :root.
+
+   Required tokens per theme:
+     surfaces : --bg, --bg-2, --surface, --surface-2, --surface-3
+     lines    : --line, --line-2, --line-soft
+     text     : --fg, --fg-2, --muted, --muted-2, --dim
+     accent   : --accent, --accent-2, --accent-soft, --accent-line, --accent-fg
+     status   : --ok, --warn, --bad, --info
+     cables   : --cable-1 … --cable-8
+     scheme   : color-scheme (dark | light)
+   ========================================================================== */
+
+/* --------------------------------------------------------------------------
+   Dark — Warm Peach (default)
+   -------------------------------------------------------------------------- */
+:root,
+:root[data-theme="dark"] {
+  color-scheme: dark;
+
+  --bg: #16110d;
+  --bg-2: #1d1814;
+  --surface: #241e19;
+  --surface-2: #2c251f;
+  --surface-3: #352d26;
+  --line: #3a3128;
+  --line-2: #4a3f34;
+  --line-soft: #2e2620;
+
+  --fg: #f3e9d8;
+  --fg-2: #d8c9b0;
+  --muted: #a59076;
+  --muted-2: #7a6753;
+  --dim: #5a4a3b;
+
+  --accent: #f0a675;
+  --accent-2: #f5b88a;
+  --accent-soft: rgba(240, 166, 117, 0.14);
+  --accent-line: rgba(240, 166, 117, 0.35);
+  --accent-fg: #2a1d12;
+
+  --ok: #8fc99a;
+  --warn: #f0c473;
+  --bad: #e88c7a;
+  --info: #a8c4d8;
+
+  --cable-1: #f0a675;
+  --cable-2: #9ec7b6;
+  --cable-3: #c8a8e0;
+  --cable-4: #e8b4c0;
+  --cable-5: #d8c47a;
+  --cable-6: #a0b8e8;
+  --cable-7: #e8a890;
+  --cable-8: #b8d4a0;
+
+  --shadow-1: rgba(255, 255, 255, 0.03) 0px 1px 0px 0px inset, rgba(0, 0, 0, 0.4) 0px 1px 2px 0px;
+}
+
+/* --------------------------------------------------------------------------
+   Light — Warm Cream
+   -------------------------------------------------------------------------- */
+:root[data-theme="light"] {
+  color-scheme: light;
+
+  --bg: #f7f2e8;
+  --bg-2: #fbf6ec;
+  --surface: #ffffff;
+  --surface-2: #fcf8f0;
+  --surface-3: #f3ebdb;
+  --line: #e5dcc8;
+  --line-2: #d4c8af;
+  --line-soft: #ebe2cf;
+
+  --fg: #2a1f15;
+  --fg-2: #4a3a2b;
+  --muted: #7a6a52;
+  --muted-2: #9c8d72;
+  --dim: #b8a98e;
+
+  --accent: #d97a3a;
+  --accent-2: #e69050;
+  --accent-soft: rgba(217, 122, 58, 0.14);
+  --accent-line: rgba(217, 122, 58, 0.45);
+  --accent-fg: #ffffff;
+
+  --ok: #5fa66e;
+  --warn: #c89a3a;
+  --bad: #c66a55;
+  --info: #6293b3;
+
+  --cable-1: #d97a3a;
+  --cable-2: #5f9c84;
+  --cable-3: #9c70c8;
+  --cable-4: #c87890;
+  --cable-5: #a89030;
+  --cable-6: #5878c0;
+  --cable-7: #c66a55;
+  --cable-8: #7ab058;
+
+  --shadow-1: rgba(0, 0, 0, 0.08) 0px 1px 3px 0px;
+}
+
+/* --------------------------------------------------------------------------
+   Midnight — Cool Blue Dark
+   -------------------------------------------------------------------------- */
+:root[data-theme="midnight"] {
+  color-scheme: dark;
+
+  --bg: #0c121c;
+  --bg-2: #11192a;
+  --surface: #16203a;
+  --surface-2: #1c2945;
+  --surface-3: #243355;
+  --line: #2a3a5e;
+  --line-2: #3a4d75;
+  --line-soft: #1f2c4c;
+
+  --fg: #e6ecf7;
+  --fg-2: #c2cce0;
+  --muted: #8995b5;
+  --muted-2: #6c789a;
+  --dim: #4a5878;
+
+  --accent: #6cc7e8;
+  --accent-2: #85d4f0;
+  --accent-soft: rgba(108, 199, 232, 0.14);
+  --accent-line: rgba(108, 199, 232, 0.35);
+  --accent-fg: #061018;
+
+  --ok: #6ec49a;
+  --warn: #e8c870;
+  --bad: #e88080;
+  --info: #8ab4d8;
+
+  --cable-1: #6cc7e8;
+  --cable-2: #8ecfa8;
+  --cable-3: #c0a8e8;
+  --cable-4: #e8b0c8;
+  --cable-5: #e8d888;
+  --cable-6: #88b8e8;
+  --cable-7: #e89898;
+  --cable-8: #a8d898;
+}
+
+/* --------------------------------------------------------------------------
+   Forest — Deep Green Dark
+   -------------------------------------------------------------------------- */
+:root[data-theme="forest"] {
+  color-scheme: dark;
+
+  --bg: #131e18;
+  --bg-2: #192a20;
+  --surface: #1f3228;
+  --surface-3: #283d31;
+  --surface-2: #2e4638;
+  --line: #2c4035;
+  --line-2: #3a5445;
+  --line-soft: #22352a;
+
+  --fg: #e8f0e4;
+  --fg-2: #c4d4bc;
+  --muted: #88a880;
+  --muted-2: #6a8862;
+  --dim: #4a6845;
+
+  --accent: #a8d878;
+  --accent-2: #bce890;
+  --accent-soft: rgba(168, 216, 120, 0.14);
+  --accent-line: rgba(168, 216, 120, 0.35);
+  --accent-fg: #0e1e10;
+
+  --ok: #78c888;
+  --warn: #d8c060;
+  --bad: #e07870;
+  --info: #88b8d0;
+
+  --cable-1: #a8d878;
+  --cable-2: #78c8b8;
+  --cable-3: #b8a8d8;
+  --cable-4: #d8a8b8;
+  --cable-5: #d8cc78;
+  --cable-6: #88b8d8;
+  --cable-7: #d89088;
+  --cable-8: #a8d898;
+}
+
+/* --------------------------------------------------------------------------
+   Mono — Grayscale Dark
+   -------------------------------------------------------------------------- */
+:root[data-theme="mono"] {
+  color-scheme: dark;
+
+  --bg: #161616;
+  --bg-2: #1e1e1e;
+  --surface: #262626;
+  --surface-2: #2f2f2f;
+  --surface-3: #383838;
+  --line: #333333;
+  --line-2: #444444;
+  --line-soft: #2a2a2a;
+
+  --fg: #ececec;
+  --fg-2: #c8c8c8;
+  --muted: #888888;
+  --muted-2: #666666;
+  --dim: #4a4a4a;
+
+  --accent: #ffffff;
+  --accent-2: #eeeeee;
+  --accent-soft: rgba(255, 255, 255, 0.10);
+  --accent-line: rgba(255, 255, 255, 0.25);
+  --accent-fg: #000000;
+
+  --ok: #88c888;
+  --warn: #d8c060;
+  --bad: #d87878;
+  --info: #88b8d8;
+
+  --cable-1: #ffffff;
+  --cable-2: #c8c8c8;
+  --cable-3: #999999;
+  --cable-4: #dddddd;
+  --cable-5: #bbbbbb;
+  --cable-6: #aaaaaa;
+  --cable-7: #eeeeee;
+  --cable-8: #d0d0d0;
+}
+
+/* --------------------------------------------------------------------------
+   Sunset — Purple/Pink Dark
+   -------------------------------------------------------------------------- */
+:root[data-theme="sunset"] {
+  color-scheme: dark;
+
+  --bg: #1c1628;
+  --bg-2: #221d32;
+  --surface: #2a2240;
+  --surface-2: #322a4e;
+  --surface-3: #3a3058;
+  --line: #3a3060;
+  --line-2: #4e4278;
+  --line-soft: #2c2448;
+
+  --fg: #f0e6f5;
+  --fg-2: #d0c0de;
+  --muted: #9880b8;
+  --muted-2: #786098;
+  --dim: #584878;
+
+  --accent: #e890c4;
+  --accent-2: #f0a8d4;
+  --accent-soft: rgba(232, 144, 196, 0.14);
+  --accent-line: rgba(232, 144, 196, 0.35);
+  --accent-fg: #1a0820;
+
+  --ok: #88c8a0;
+  --warn: #e8c870;
+  --bad: #e88080;
+  --info: #90b8e8;
+
+  --cable-1: #e890c4;
+  --cable-2: #90c8b0;
+  --cable-3: #b8a0e8;
+  --cable-4: #e8a0b8;
+  --cable-5: #e8d880;
+  --cable-6: #90a8e8;
+  --cable-7: #e89898;
+  --cable-8: #a8d898;
+}
+
+/* --------------------------------------------------------------------------
+   Mist — Cool Blue Light
+   -------------------------------------------------------------------------- */
+:root[data-theme="mist"] {
+  color-scheme: light;
+
+  --bg: #eef3f9;
+  --bg-2: #f4f8fc;
+  --surface: #ffffff;
+  --surface-2: #f0f5fb;
+  --surface-3: #dfeaf3;
+  --line: #cad9e8;
+  --line-2: #b0c4d8;
+  --line-soft: #dce8f3;
+
+  --fg: #16243a;
+  --fg-2: #2c3e58;
+  --muted: #5878a0;
+  --muted-2: #7898c0;
+  --dim: #a0b8d0;
+
+  --accent: #2a82b0;
+  --accent-2: #3898cc;
+  --accent-soft: rgba(42, 130, 176, 0.12);
+  --accent-line: rgba(42, 130, 176, 0.40);
+  --accent-fg: #ffffff;
+
+  --ok: #48986a;
+  --warn: #b08030;
+  --bad: #b85050;
+  --info: #3878b0;
+
+  --cable-1: #2a82b0;
+  --cable-2: #489880;
+  --cable-3: #7868b8;
+  --cable-4: #b86890;
+  --cable-5: #908820;
+  --cable-6: #2860a8;
+  --cable-7: #b85050;
+  --cable-8: #489858;
+
+  --shadow-1: rgba(0, 0, 0, 0.08) 0px 1px 3px 0px;
+}
+
+/* --------------------------------------------------------------------------
+   Sage — Soft Green Light
+   -------------------------------------------------------------------------- */
+:root[data-theme="sage"] {
+  color-scheme: light;
+
+  --bg: #eef4ed;
+  --bg-2: #f4f8f3;
+  --surface: #ffffff;
+  --surface-2: #f0f6ef;
+  --surface-3: #dfe9da;
+  --line: #c8dac4;
+  --line-2: #b0c8aa;
+  --line-soft: #daebd6;
+
+  --fg: #1a2a1c;
+  --fg-2: #2e4230;
+  --muted: #508048;
+  --muted-2: #7a9872;
+  --dim: #a0b89a;
+
+  --accent: #5a8e3a;
+  --accent-2: #6aa048;
+  --accent-soft: rgba(90, 142, 58, 0.12);
+  --accent-line: rgba(90, 142, 58, 0.40);
+  --accent-fg: #ffffff;
+
+  --ok: #3a9850;
+  --warn: #a08020;
+  --bad: #b05040;
+  --info: #3878a0;
+
+  --cable-1: #5a8e3a;
+  --cable-2: #3a8878;
+  --cable-3: #7868a8;
+  --cable-4: #b06880;
+  --cable-5: #908020;
+  --cable-6: #3870a0;
+  --cable-7: #b05040;
+  --cable-8: #3a9060;
+
+  --shadow-1: rgba(0, 0, 0, 0.08) 0px 1px 3px 0px;
+}
+
+/* --------------------------------------------------------------------------
+   Paper — Near-White Mono Light
+   -------------------------------------------------------------------------- */
+:root[data-theme="paper"] {
+  color-scheme: light;
+
+  --bg: #f4f4f4;
+  --bg-2: #f8f8f8;
+  --surface: #ffffff;
+  --surface-2: #f2f2f2;
+  --surface-3: #e4e4e4;
+  --line: #d8d8d8;
+  --line-2: #c0c0c0;
+  --line-soft: #e8e8e8;
+
+  --fg: #181818;
+  --fg-2: #383838;
+  --muted: #686868;
+  --muted-2: #888888;
+  --dim: #b0b0b0;
+
+  --accent: #181818;
+  --accent-2: #383838;
+  --accent-soft: rgba(24, 24, 24, 0.08);
+  --accent-line: rgba(24, 24, 24, 0.25);
+  --accent-fg: #ffffff;
+
+  --ok: #387038;
+  --warn: #907020;
+  --bad: #903030;
+  --info: #205080;
+
+  --cable-1: #181818;
+  --cable-2: #387038;
+  --cable-3: #504090;
+  --cable-4: #904060;
+  --cable-5: #706010;
+  --cable-6: #205080;
+  --cable-7: #903030;
+  --cable-8: #386830;
+
+  --shadow-1: rgba(0, 0, 0, 0.08) 0px 1px 3px 0px;
+}
+
+/* --------------------------------------------------------------------------
+   Blush — Warm Pink Light
+   -------------------------------------------------------------------------- */
+:root[data-theme="blush"] {
+  color-scheme: light;
+
+  --bg: #faeef3;
+  --bg-2: #fdf4f8;
+  --surface: #ffffff;
+  --surface-2: #f8eef4;
+  --surface-3: #ecd5df;
+  --line: #e0c0d0;
+  --line-2: #d0a8bc;
+  --line-soft: #f0dce6;
+
+  --fg: #2c1a24;
+  --fg-2: #4a2a3c;
+  --muted: #8a5070;
+  --muted-2: #aa7890;
+  --dim: #c8a0b8;
+
+  --accent: #c4438a;
+  --accent-2: #d458a0;
+  --accent-soft: rgba(196, 67, 138, 0.12);
+  --accent-line: rgba(196, 67, 138, 0.40);
+  --accent-fg: #ffffff;
+
+  --ok: #487858;
+  --warn: #9a7820;
+  --bad: #b04040;
+  --info: #3870a8;
+
+  --cable-1: #c4438a;
+  --cable-2: #488878;
+  --cable-3: #7848a8;
+  --cable-4: #d07090;
+  --cable-5: #9a8020;
+  --cable-6: #3870a8;
+  --cable-7: #b04040;
+  --cable-8: #489860;
+
+  --shadow-1: rgba(0, 0, 0, 0.08) 0px 1px 3px 0px;
+}
