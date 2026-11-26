@@ -6,17 +6,19 @@
 <link rel="icon" href="assets/icon.svg" type="image/svg+xml">
 <title>Funsy — your videos, your toys, perfectly in sync</title>
 <script>
-  // Pick the theme before the first paint: random from the visitor's mode, kept for the visit.
+  // Pick the theme before the first paint: a new one from the visitor's mode on
+  // every load (never the last one), unless they chose one in the footer.
   (() => {
     const DARK = ["dark", "sunset", "midnight", "forest", "mono"];
     const LIGHT = ["light", "blush", "mist", "sage", "paper"];
     const forced = new URLSearchParams(location.search).get("theme");
     let theme = [...DARK, ...LIGHT].includes(forced) ? forced : sessionStorage.getItem("funsy-theme");
     if (![...DARK, ...LIGHT].includes(theme)) {
-      const set = matchMedia("(prefers-color-scheme: light)").matches ? LIGHT : DARK;
+      const last = sessionStorage.getItem("funsy-last-theme");
+      const set = (matchMedia("(prefers-color-scheme: light)").matches ? LIGHT : DARK).filter((t) => t !== last);
       theme = set[Math.floor(Math.random() * set.length)];
+      sessionStorage.setItem("funsy-last-theme", theme);
     }
-    sessionStorage.setItem("funsy-theme", theme);
     document.documentElement.dataset.theme = theme;
   })();
 </script>
