@@ -12,7 +12,7 @@
     const DARK = ["dark", "sunset", "midnight", "forest", "mono"];
     const LIGHT = ["light", "blush", "mist", "sage", "paper"];
     const forced = new URLSearchParams(location.search).get("theme");
-    let theme = [...DARK, ...LIGHT].includes(forced) ? forced : sessionStorage.getItem("funsy-theme");
+    let theme = [...DARK, ...LIGHT].includes(forced) ? forced : sessionStorage.getItem("funsy-theme-picked");
     if (![...DARK, ...LIGHT].includes(theme)) {
       const last = sessionStorage.getItem("funsy-last-theme");
       const set = (matchMedia("(prefers-color-scheme: light)").matches ? LIGHT : DARK).filter((t) => t !== last);
@@ -583,7 +583,7 @@ dots.addEventListener("click", (e) => {
   if (!dot) return;
   root.classList.add("theming");
   root.dataset.theme = dot.dataset.theme;
-  sessionStorage.setItem("funsy-theme", dot.dataset.theme);
+  sessionStorage.setItem("funsy-theme-picked", dot.dataset.theme);
   paintPicker();
   paintShots();
   setTimeout(() => root.classList.remove("theming"), 350);
