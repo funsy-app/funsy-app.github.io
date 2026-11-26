@@ -196,6 +196,9 @@
 
   /* download */
   .dl-head { display: flex; align-items: baseline; flex-wrap: wrap; gap: 14px 22px; margin-bottom: 36px; }
+  .dl-help { margin: 28px 0 0; color: var(--muted); font-size: 15px; }
+  .dl-help a, .foot-link { color: var(--fg); text-decoration: underline; text-decoration-color: var(--accent-line); text-underline-offset: 3px; }
+  .dl-help a:hover, .foot-link:hover { text-decoration-color: var(--accent); }
   .dl-head .ver { font: 13px "Geist Mono", monospace; color: var(--muted); }
   .news { margin: -8px 0 32px; border: 1px solid var(--accent-line); border-radius: 20px; padding: 26px 30px; background: var(--surface); position: relative; }
   .news h3 { margin: 0 0 12px; font: 600 15px "Geist Mono", monospace; color: var(--accent); }
@@ -258,7 +261,7 @@
 <nav class="topbar" id="topbar"><div class="wrap">
   <a class="wordmark" href="#top" aria-label="Funsy"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#funsy-mark"/></svg><span>funs<em>y</em></span></a>
   <div class="nav"><a href="#sync">Sync</a><a href="#devices">Devices</a><a href="#download">Download</a></div>
-  <div class="top-right" data-live hidden><a class="btn ghost" href="#">Discord</a><a class="btn" href="#">Support on Patreon</a></div>
+  <div class="top-right"><a class="btn ghost" href="discord/">Discord</a><a class="btn" href="#" data-patreon hidden>Support on Patreon</a></div>
 </div></nav>
 
 <header class="hero" id="top"><div class="wrap">
@@ -502,12 +505,13 @@
       </div>
     </article>
   </div>
+  <p class="dl-help">Questions or problems? <a href="discord/">Ask on Discord</a>.</p>
 </div></section>
 
-<section class="section" data-live hidden style="padding-top: 0"><div class="wrap">
+<section class="section" data-patreon hidden style="padding-top: 0"><div class="wrap">
   <div class="support-box reveal">
     <div><h2>Help Funsy grow</h2><p>Funsy is built by one developer. Patreon supporters keep it going.</p></div>
-    <div class="btns"><a class="btn lg primary" href="#">Support on Patreon</a><a class="btn lg" href="#">Join the Discord</a></div>
+    <div class="btns"><a class="btn lg primary" href="#">Support on Patreon</a><a class="btn lg" href="discord/">Join the Discord</a></div>
   </div>
 </div></section>
 
@@ -515,6 +519,7 @@
   <a class="wordmark" href="#top" aria-label="Funsy"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#funsy-mark"/></svg><span>funs<em>y</em></span></a>
   <span>For adults (18+).</span>
   <span>© 2026 Funsy</span>
+  <a class="foot-link" href="discord/">Discord</a>
   <div class="themes">
     <span>Funsy comes in 10 themes. Try one:</span>
     <div class="dots" id="dots"></div>
@@ -699,8 +704,8 @@ else fetch("https://api.github.com/repos/funsy-app/funsy-app/releases/latest", {
   .then((r) => (r.ok ? r.json().then(showRelease) : noRelease(r.status === 404 ? "The first release is on its way." : "Couldn't load the latest version.")))
   .catch(() => noRelease("Couldn't load the latest version."));
 
-/* ---------- Patreon + Discord ---------- */
-if (params.get("live") === "1") document.querySelectorAll("[data-live]").forEach((el) => (el.hidden = false));
+/* ---------- Patreon (shown once it is live; ?live=1 previews it) ---------- */
+if (params.get("live") === "1") document.querySelectorAll("[data-patreon]").forEach((el) => (el.hidden = false));
 
 /* ---------- top bar border on scroll ---------- */
 const topbar = document.getElementById("topbar");
