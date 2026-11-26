@@ -51,6 +51,7 @@
     transition: transform 160ms ease, box-shadow 160ms ease, background 160ms ease, border-color 160ms ease; }
   .btn:hover { transform: translateY(-2px); background: var(--surface); }
   .btn.ghost { border-color: transparent; }
+  .btn-icon { width: 18px; height: 18px; flex: none; }
   .btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-fg); box-shadow: 0 10px 30px var(--accent-soft); }
   .btn.primary:hover { background: var(--accent-2); box-shadow: 0 16px 40px var(--accent-line); }
   .btn.lg { height: 58px; padding: 0 28px; font-size: 16px; border-radius: 16px; }
@@ -256,12 +257,12 @@
 <body>
 
 <!-- Funsy's mark: a motion line crossed by the playhead, the played part dimmer. -->
-<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="funsy-mark" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"><polyline points="5,40 15,24 26,44 32,34" stroke-opacity=".42"/><polyline points="32,34 40,20 50,42 59,28"/></g><rect x="30.25" y="6" width="3.5" height="52" fill="currentColor"/><circle cx="32" cy="34" r="7" fill="currentColor"/></symbol></svg>
+<svg width="0" height="0" style="position:absolute" aria-hidden="true"><symbol id="funsy-mark" viewBox="0 0 64 64"><g fill="none" stroke="currentColor" stroke-width="5.5" stroke-linejoin="round" stroke-linecap="round"><polyline points="5,40 15,24 26,44 32,34" stroke-opacity=".42"/><polyline points="32,34 40,20 50,42 59,28"/></g><rect x="30.25" y="6" width="3.5" height="52" fill="currentColor"/><circle cx="32" cy="34" r="7" fill="currentColor"/></symbol><symbol id="discord-logo" viewBox="0 0 24 24"><path fill="currentColor" d="M20.317 4.3698a19.7913 19.7913 0 00-4.8851-1.5152.0741.0741 0 00-.0785.0371c-.211.3753-.4447.8648-.6083 1.2495-1.8447-.2762-3.68-.2762-5.4868 0-.1636-.3933-.4058-.8742-.6177-1.2495a.077.077 0 00-.0785-.037 19.7363 19.7363 0 00-4.8852 1.515.0699.0699 0 00-.0321.0277C.5334 9.0458-.319 13.5799.0992 18.0578a.0824.0824 0 00.0312.0561c2.0528 1.5076 4.0413 2.4228 5.9929 3.0294a.0777.0777 0 00.0842-.0276c.4616-.6304.8731-1.2952 1.226-1.9942a.076.076 0 00-.0416-.1057c-.6528-.2476-1.2743-.5495-1.8722-.8923a.077.077 0 01-.0076-.1277c.1258-.0943.2517-.1923.3718-.2914a.0743.0743 0 01.0776-.0105c3.9278 1.7933 8.18 1.7933 12.0614 0a.0739.0739 0 01.0785.0095c.1202.099.246.1981.3728.2924a.077.077 0 01-.0066.1276 12.2986 12.2986 0 01-1.873.8914.0766.0766 0 00-.0407.1067c.3604.698.7719 1.3628 1.225 1.9932a.076.076 0 00.0842.0286c1.961-.6067 3.9495-1.5219 6.0023-3.0294a.077.077 0 00.0313-.0552c.5004-5.177-.8382-9.6739-3.5485-13.6604a.061.061 0 00-.0312-.0286zM8.02 15.3312c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9555-2.4189 2.157-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.9555 2.4189-2.1569 2.4189zm7.9748 0c-1.1825 0-2.1569-1.0857-2.1569-2.419 0-1.3332.9554-2.4189 2.1569-2.4189 1.2108 0 2.1757 1.0952 2.1568 2.419 0 1.3332-.946 2.4189-2.1568 2.4189Z"/></symbol></svg>
 
 <nav class="topbar" id="topbar"><div class="wrap">
   <a class="wordmark" href="#top" aria-label="Funsy"><svg viewBox="0 0 64 64" aria-hidden="true"><use href="#funsy-mark"/></svg><span>funs<em>y</em></span></a>
   <div class="nav"><a href="#sync">Sync</a><a href="#devices">Devices</a><a href="#download">Download</a></div>
-  <div class="top-right"><a class="btn ghost" href="discord/">Discord</a><a class="btn" href="#" data-patreon hidden>Support on Patreon</a></div>
+  <div class="top-right"><a class="btn ghost" href="discord/"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#discord-logo"/></svg> Discord</a><a class="btn" href="#" data-patreon hidden>Support on Patreon</a></div>
 </div></nav>
 
 <header class="hero" id="top"><div class="wrap">
@@ -511,7 +512,7 @@
 <section class="section" data-patreon hidden style="padding-top: 0"><div class="wrap">
   <div class="support-box reveal">
     <div><h2>Help Funsy grow</h2><p>Funsy is built by one developer. Patreon supporters keep it going.</p></div>
-    <div class="btns"><a class="btn lg primary" href="#">Support on Patreon</a><a class="btn lg" href="discord/">Join the Discord</a></div>
+    <div class="btns"><a class="btn lg primary" href="#">Support on Patreon</a><a class="btn lg" href="discord/"><svg class="btn-icon" viewBox="0 0 24 24" aria-hidden="true"><use href="#discord-logo"/></svg> Join the Discord</a></div>
   </div>
 </div></section>
 
