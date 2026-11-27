@@ -642,9 +642,9 @@ const paintHero = (version) => {
 paintHero();
 document.querySelector(`.platform[data-os="${os}"]`)?.classList.add("mine");
 
-const linuxFiles = [["AppImage", "appimage"], [".deb", "deb"], [".rpm", "rpm"], ["Arch package", "arch"]];
+const linuxFiles = [["AppImage", "appimage"], ["Flatpak", "flatpak"], [".deb", "deb"], [".rpm", "rpm"], ["Arch package", "arch"]];
 document.getElementById("linux").innerHTML = ["x86_64", "arm64"].map((arch) =>
-  `<p class="arch">${arch}</p><div class="chips">${linuxFiles.map(([label, kind]) =>
+  `<p class="arch">${arch}</p><div class="chips">${linuxFiles.filter(([, kind]) => kind !== "arch" || arch === "x86_64").map(([label, kind]) =>
     `<a class="file" data-asset="${kind}-${arch}" href="${RELEASES}/latest">${label}<b>↓</b></a>`).join("")}</div>`).join("");
 
 document.querySelectorAll("[data-copy]").forEach((b) => b.addEventListener("click", async () => {
@@ -673,7 +673,8 @@ const ASSETS = {
   "rpm-x86_64": new RegExp(`${X64}.*\\.rpm$`, "i"),
   "rpm-arm64": new RegExp(`${ARM}.*\\.rpm$`, "i"),
   "arch-x86_64": new RegExp(`${X64}.*\\.pkg\\.tar\\.`, "i"),
-  "arch-arm64": new RegExp(`${ARM}.*\\.pkg\\.tar\\.`, "i"),
+  "flatpak-x86_64": new RegExp(`${X64}.*\\.flatpak$`, "i"),
+  "flatpak-arm64": new RegExp(`${ARM}.*\\.flatpak$`, "i"),
   "server-x86_64": new RegExp(`server.*${X64}.*\\.tar\\.gz$`, "i"),
   "server-arm64": new RegExp(`server.*${ARM}.*\\.tar\\.gz$`, "i"),
 };
