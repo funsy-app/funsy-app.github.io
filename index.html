@@ -490,7 +490,7 @@
   </div>
   <div class="platforms reveal">
     <article class="platform" data-os="windows"><h3>Windows</h3>
-      <a class="file" data-asset="exe" href="https://github.com/funsy-app/funsy-app/releases/latest">Installer (.exe)<b>↓</b></a><a class="file" data-asset="msi" href="https://github.com/funsy-app/funsy-app/releases/latest">Installer (.msi)<b>↓</b></a>
+      <a class="file" data-asset="exe" href="https://github.com/funsy-app/funsy-app/releases/latest">Installer (.exe)<b>↓</b></a>
       <p class="note">Windows may warn that the app is unrecognised. Choose More info, then Run anyway.</p></article>
     <article class="platform" data-os="macos"><h3>macOS</h3>
       <a class="file" data-asset="dmg" href="https://github.com/funsy-app/funsy-app/releases/latest">Apple Silicon (.dmg)<b>↓</b></a>
@@ -664,7 +664,6 @@ const X64 = "(x86_64|amd64|x64)";
 const ARM = "(arm64|aarch64)";
 const ASSETS = {
   exe: /\.exe$/i,
-  msi: /\.msi$/i,
   dmg: /\.dmg$/i,
   "appimage-x86_64": new RegExp(`${X64}.*\\.AppImage$`, "i"),
   "appimage-arm64": new RegExp(`${ARM}.*\\.AppImage$`, "i"),
